@@ -19,6 +19,7 @@ function fallback(text) {
   el.style.top = 0;
   el.style.left = 0;
   el.style.position = "fixed";
+  el.ariaHidden = "true";
   document.body.appendChild(el);
   el.select();
   const success = document.execCommand("copy");
