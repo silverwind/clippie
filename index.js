@@ -1,15 +1,19 @@
 export async function clippie(content) {
-  if (content instanceof Blob) {
-    const item = new ClipboardItem({[content.type]: content}); // eslint-disable-line no-undef
-    await navigator.clipboard.write([item]);
-  } else {
-    try {
-      await navigator.clipboard.writeText(content);
-    } catch {
-      return fallback(content);
+  try {
+    if (content instanceof Blob) {
+      const item = new ClipboardItem({[content.type]: content}); // eslint-disable-line no-undef
+      await navigator.clipboard.write([item]);
+    } else {
+      try {
+        await navigator.clipboard.writeText(content);
+      } catch {
+        return fallback(content);
+      }
     }
+    return true;
+  } catch {
+    return false;
   }
-  return true;
 }
 
 function fallback(text) {
