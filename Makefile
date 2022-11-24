@@ -2,12 +2,12 @@ node_modules: package-lock.json
 	npm install --no-save
 	@touch node_modules
 
+.PHONY: lint
 lint: node_modules
 	npx eslint --color .
 
 .PHONY: test
-test: node_modules lint
-	npx vitest
+test: lint
 
 .PHONY: make bench
 bench: node_modules
