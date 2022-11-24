@@ -14,14 +14,14 @@ export async function clippie(content) {
 
 function fallback(text) {
   if (!document.execCommand) return false;
-  const tempTextArea = document.createElement("textarea");
-  tempTextArea.value = text;
-  tempTextArea.style.top = 0;
-  tempTextArea.style.left = 0;
-  tempTextArea.style.position = "fixed";
-  document.body.appendChild(tempTextArea);
-  tempTextArea.select();
+  const el = document.createElement("textarea");
+  el.value = text;
+  el.style.top = 0;
+  el.style.left = 0;
+  el.style.position = "fixed";
+  document.body.appendChild(el);
+  el.select();
   const success = document.execCommand("copy");
-  document.body.removeChild(tempTextArea);
+  document.body.removeChild(el);
   return success;
 }
