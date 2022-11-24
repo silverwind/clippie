@@ -1,7 +1,7 @@
 # clippie
 [![](https://img.shields.io/npm/v/clippie.svg?style=flat)](https://www.npmjs.org/package/clippie) [![](https://img.shields.io/npm/dm/clippie.svg)](https://www.npmjs.org/package/clippie) [![](https://img.shields.io/bundlephobia/minzip/clippie.svg)](https://bundlephobia.com/package/clippie)
 
-`clippie` copies text and blobs to clipboard in Browsers. It relies on modern APIs that require a secure origin but also includes a fallback so it works on insecure origins.
+`clippie` copies text and blobs (images) to clipboard in Browsers. It relies on modern APIs that require a secure origin but also includes a fallback so it works on insecure origins.
 
 ## Usage
 
