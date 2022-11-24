@@ -19,6 +19,7 @@ function fallback(text) {
   el.style.top = 0;
   el.style.left = 0;
   el.style.position = "fixed";
+  el.style.clip = "rect(0, 0, 0, 0)";
   el.ariaHidden = "true";
   document.body.appendChild(el);
   el.select();
