@@ -1,0 +1,20 @@
+{
+  "name": "clippie",
+  "version": "1.0.0",
+  "description": "Teeny-tiny browser clipboard copy",
+  "author": "silverwind",
+  "repository": "silverwind/clippie",
+  "license": "BSD-2-Clause",
+  "type": "module",
+  "exports": "./index.js",
+  "sideEffects": false,
+  "files": [
+    "./index.js"
+  ],
+  "devDependencies": {
+    "eslint": "8.28.0",
+    "eslint-config-silverwind": "62.0.1",
+    "updates": "13.2.1",
+    "versions": "10.2.4"
+  }
+}
