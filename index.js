@@ -1,7 +1,7 @@
 export async function clippie(content) {
   try {
     if (content instanceof Blob) {
-      const item = new ClipboardItem({[content.type]: content}); // eslint-disable-line no-undef
+      const item = new ClipboardItem({[content.type]: content});
       await navigator.clipboard.write([item]);
     } else {
       try {
