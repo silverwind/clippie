@@ -12,7 +12,7 @@ import {clippie} from "clippie";
 const success = await clippie("text to copy");
 
 // copy blob, also works with images
-const success = await clippie(new Blob("text to copy"), "text/plain");
+const success = await clippie(new Blob("text to copy", "text/plain"));
 ```
 
 ## API
