@@ -20,6 +20,6 @@ const success = await clippie(imageBlob);
 
 - `content` *String or Blob*: Content to copy.
 
-Returns `true` when sucessful and `false` when not. Will never throw.
+Returns `true` when successful and `false` when not. Will never throw.
 
 © [silverwind](https://github.com/silverwind), distributed under BSD licence
