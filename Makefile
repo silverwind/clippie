@@ -7,7 +7,8 @@ lint: node_modules
 	npx eslint --color .
 
 .PHONY: test
-test: lint
+test: lint node_modules
+	npx vitest
 
 .PHONY: make bench
 bench: node_modules

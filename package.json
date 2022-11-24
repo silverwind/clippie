@@ -14,7 +14,9 @@
   "devDependencies": {
     "eslint": "8.28.0",
     "eslint-config-silverwind": "63.0.0",
+    "jsdom": "20.0.3",
     "updates": "13.2.1",
-    "versions": "10.2.4"
+    "versions": "10.2.4",
+    "vitest": "0.25.3"
   }
 }
