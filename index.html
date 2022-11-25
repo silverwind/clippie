@@ -1,6 +1,10 @@
 <!DOCTYPE html><html><head></head><body><button>copy</button><script type="module">
   import {clippie} from "./index.js";
-  document.querySelector('button').addEventListener("click", async () => {
-    console.info(await clippie("sometext"));
+
+  const btn = document.querySelector('button');
+  btn.addEventListener("click", async () => {
+    const oldText = btn.textContent;
+    btn.textContent = await clippie("sometext");
+    setTimeout(() => btn.textContent = oldText, 1000);
   });
 </script></body></html>
