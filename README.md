@@ -8,11 +8,12 @@
 ```js
 import {clippie} from "clippie";
 
-// copy text
-const success = await clippie("text to copy");
-
-// copy image
-const success = await clippie(imageBlob);
+let success;
+try {
+  success = await clippie(stringOrBlob);
+} catch {
+  success = false;
+}
 ```
 
 ## API
@@ -20,7 +21,7 @@ const success = await clippie(imageBlob);
 
 - `content` *String*, *Blob*, *Array*: Content to copy. If an Array is passed, will copy all items in sequence.
 
-Returns `true` when successful and `false` when not. Will never throw.
+Returns a boolean indicating success. May throw critical errors.
 
 ## Notes
 

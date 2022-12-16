@@ -1,21 +1,17 @@
 export async function clippie(content) {
-  try {
-    for (const c of Array.isArray(content) ? content : [content]) {
-      if (c instanceof Blob) {
-        const item = new ClipboardItem({[c.type]: c});
-        await navigator.clipboard.write([item]);
-      } else {
-        try {
-          await navigator.clipboard.writeText(c);
-        } catch {
-          return fallback(c);
-        }
+  for (const c of Array.isArray(content) ? content : [content]) {
+    if (c instanceof Blob) {
+      const item = new ClipboardItem({[c.type]: c});
+      await navigator.clipboard.write([item]);
+    } else {
+      try {
+        await navigator.clipboard.writeText(c);
+      } catch {
+        return fallback(c);
       }
     }
-    return true;
-  } catch {
-    return false;
   }
+  return true;
 }
 
 function fallback(text) {
