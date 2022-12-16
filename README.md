@@ -22,4 +22,8 @@ const success = await clippie(imageBlob);
 
 Returns `true` when successful and `false` when not. Will never throw.
 
+## Notes
+
+To enable image copy in Firefox, enable `dom.events.asyncClipboard.clipboardItem` in `about:config`. Track [Bug 1619947](https://bugzilla.mozilla.org/show_bug.cgi?id=1619947) for updates.
+
 © [silverwind](https://github.com/silverwind), distributed under BSD licence
