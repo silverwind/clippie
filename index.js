@@ -10,7 +10,7 @@ export async function clippie(content, {reject = false} = {}) {
         } catch {
           if (!document.execCommand) return false;
           const el = document.createElement("textarea");
-          el.value = c;
+          el.value = String(c);
           el.style.top = 0;
           el.style.left = 0;
           el.style.position = "fixed";
