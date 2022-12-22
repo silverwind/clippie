@@ -26,6 +26,6 @@ Returns `true` when successful and `false` when not. Will never throw unless `re
 
 ## Notes
 
-To enable image copy in Firefox, enable `dom.events.asyncClipboard.clipboardItem` in `about:config`. Track [Bug 1619947](https://bugzilla.mozilla.org/show_bug.cgi?id=1619947) for updates.
+Firefox needs `dom.events.asyncClipboard.clipboardItem` in `about:config` to enable image copying. Track [Bug 1619947](https://bugzilla.mozilla.org/show_bug.cgi?id=1619947) for updates.
 
 © [silverwind](https://github.com/silverwind), distributed under BSD licence
