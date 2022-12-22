@@ -22,7 +22,7 @@ const success = await clippie(imageBlob);
 - `options` *Object*
   - `reject`: *Boolean*: Whether to reject on unexpected errors. Default: `false`.
 
-Returns `true` when successful and `false` when not. Will never throw.
+Returns `true` when successful and `false` when not. Will never throw unless `reject` is `true`.
 
 ## Notes
 
