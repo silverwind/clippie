@@ -1,4 +1,4 @@
-export async function clippie(content) {
+export async function clippie(content, {reject = false} = {}) {
   try {
     for (const c of Array.isArray(content) ? content : [content]) {
       if (c instanceof Blob) {
@@ -6,14 +6,15 @@ export async function clippie(content) {
         await navigator.clipboard.write([item]);
       } else {
         try {
-          await navigator.clipboard.writeText(c);
+          await navigator.clipboard.writeText(String(c));
         } catch {
           return fallback(c);
         }
       }
     }
     return true;
-  } catch {
+  } catch (err) {
+    if (reject) throw err;
     return false;
   }
 }
