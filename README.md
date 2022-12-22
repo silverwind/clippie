@@ -18,7 +18,7 @@ const success = await clippie(imageBlob);
 ## API
 ### clippie(content, [options])
 
-- `content` *String*, *Blob*, *Array*: Content to copy. If an Array is passed, will copy all items in sequence.
+- `content` *String*, *Blob*, *Array[String,Blob]*: Content to copy. If an Array is passed, will copy all items in sequence.
 - `options` *Object*
   - `reject`: *Boolean*: Whether to reject on unexpected errors. Default: `false`.
 
