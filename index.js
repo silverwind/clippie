@@ -1,16 +1,20 @@
-export async function clippie(content, {reject = false} = {}) {
+export async function clippie(data, {reject = false} = {}) {
+  const contents = Array.isArray(data) ? data : [data];
+  let numSuccess = 0;
   try {
-    for (const c of Array.isArray(content) ? content : [content]) {
-      if (c instanceof Blob) {
-        const item = new ClipboardItem({[c.type]: c});
+    for (const content of contents) {
+      if (content instanceof Blob) {
+        const item = new ClipboardItem({[content.type]: content});
         await navigator.clipboard.write([item]);
+        numSuccess++;
       } else {
         try {
-          await navigator.clipboard.writeText(String(c));
+          await navigator.clipboard.writeText(String(content));
+          numSuccess++;
         } catch {
-          if (!document.execCommand) return false;
+          if (!document.execCommand) continue;
           const el = document.createElement("textarea");
-          el.value = String(c);
+          el.value = String(content);
           el.style.top = 0;
           el.style.left = 0;
           el.style.position = "fixed";
@@ -19,12 +23,12 @@ export async function clippie(content, {reject = false} = {}) {
           document.body.appendChild(el);
           el.select();
           const success = document.execCommand("copy");
+          if (success) numSuccess++;
           document.body.removeChild(el);
-          return success;
         }
       }
     }
-    return true;
+    return numSuccess === contents.length;
   } catch (err) {
     if (reject) throw err;
     return false;
