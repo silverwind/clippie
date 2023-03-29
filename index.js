@@ -21,10 +21,13 @@ export async function clippie(data, {reject = false} = {}) {
           el.style.clip = "rect(0, 0, 0, 0)";
           el.ariaHidden = "true";
           document.body.appendChild(el);
-          el.select();
-          const success = document.execCommand("copy");
-          if (success) numSuccess++;
-          document.body.removeChild(el);
+          try {
+            el.select();
+            const success = document.execCommand("copy");
+            if (success) numSuccess++;
+          } finally {
+            document.body.removeChild(el);
+          }
         }
       }
     }
