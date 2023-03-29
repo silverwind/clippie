@@ -1,7 +1,7 @@
 <!DOCTYPE html><html><head></head><body><button>copy</button><script type="module">
   import {clippie} from "./index.js";
 
-  const btn = document.querySelector('button');
+  const btn = document.querySelector("button");
   btn.addEventListener("click", async () => {
     const oldText = btn.textContent;
     btn.textContent = await clippie("sometext");

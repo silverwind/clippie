@@ -1,5 +1,2 @@
 root: true
 extends: silverwind
-
-rules:
-  import/no-unused-modules: [0]
