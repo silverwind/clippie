@@ -18,7 +18,7 @@ export async function clippie(data, {reject = false} = {}) {
           el.style.top = 0;
           el.style.left = 0;
           el.style.position = "fixed";
-          el.style.clip = "rect(0, 0, 0, 0)";
+          el.style.clipPath = "inset(50%)";
           el.ariaHidden = "true";
           document.body.appendChild(el);
           try {
