@@ -1,7 +1,7 @@
 export async function clippie(data, {reject = false} = {}) {
-  const contents = Array.isArray(data) ? data : [data];
-  let numSuccess = 0;
   try {
+    const contents = Array.isArray(data) ? data : [data];
+    let numSuccess = 0;
     for (const content of contents) {
       if (content instanceof Blob) {
         const item = new ClipboardItem({[content.type]: content});
