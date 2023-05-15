@@ -14,7 +14,7 @@
   "devDependencies": {
     "blob-polyfill": "7.0.20220408",
     "eslint": "8.40.0",
-    "eslint-config-silverwind": "71.0.3",
+    "eslint-config-silverwind": "72.0.5",
     "jsdom": "22.0.0",
     "updates": "14.1.0",
     "versions": "11.0.0",

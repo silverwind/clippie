@@ -20,13 +20,13 @@ export async function clippie(data, {reject = false} = {}) {
           el.style.position = "fixed";
           el.style.clipPath = "inset(50%)";
           el.ariaHidden = "true";
-          document.body.appendChild(el);
+          document.body.append(el);
           try {
             el.select();
             const success = document.execCommand("copy");
             if (success) numSuccess++;
           } finally {
-            document.body.removeChild(el);
+            el.remove();
           }
         }
       }
