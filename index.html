@@ -1,10 +1,47 @@
-<!DOCTYPE html><html><head></head><body><button>copy</button><script type="module">
+<!DOCTYPE html><html style="color-scheme: dark;"><head></head><body>
+  <button class="copytext">copy text</button>
+  <button class="copysvg">copy svg</button>
+  <button class="copyimg">copy image</button>
+  <input/>
+  <pre></pre>
+<script type="module">
   import {clippie} from "./index.js";
 
-  const btn = document.querySelector("button");
-  btn.addEventListener("click", async () => {
-    const oldText = btn.textContent;
-    btn.textContent = await clippie("sometext");
-    setTimeout(() => btn.textContent = oldText, 1000);
+  const pre = document.querySelector("pre");
+
+  function base64ToArrayBuffer(base64) {
+      var binaryString = atob(base64);
+      var bytes = new Uint8Array(binaryString.length);
+      for (var i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+  }
+
+  async function copy(content) {
+    try {
+      const success = await clippie(content, {reject: true});
+      pre.textContent += `${success}\n`;
+    } catch (err) {
+      pre.textContent += `${err.message}\n`;
+    }
+  }
+
+  document.querySelector(".copytext").addEventListener("click", async () => {
+    await copy("sometext", {reject: true});
+  });
+
+  document.querySelector(".copysvg").addEventListener("click", async () => {
+    await copy(
+      new Blob([`<svg width="10" height="10"/>`], {type: "image/svg+xml"}),
+      `<svg width="20" height="20"/>`,
+    );
+  });
+
+  document.querySelector(".copyimg").addEventListener("click", async () => {
+    await copy(
+      new Blob([base64ToArrayBuffer("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"}),
+      `image description`,
+    );
   });
 </script></body></html>
