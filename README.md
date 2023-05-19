@@ -13,12 +13,15 @@ const success = await clippie("text to copy");
 
 // copy image
 const success = await clippie(imageBlob);
+
+// copy image and text
+const success = await clippie(imageBlob, "image description");
 ```
 
 ## API
 ### clippie(content, [options])
 
-- `content` *String*, *Blob*, *Array[String,Blob]*: Content to copy. If an Array is passed, will copy all items in sequence.
+- `content` *String*, *Blob*, *Array[String,Blob]*: Content to copy. If an Array is passed, will construct a `ClipboardItem` with all items. Only one item per `type` is allowed.
 - `options` *Object*
   - `reject`: *Boolean*: Whether to reject on unexpected errors. Default: `false`.
 

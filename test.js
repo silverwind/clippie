@@ -9,13 +9,13 @@ beforeAll(() => {
     writeText: async text => clipboard.push(text),
     write: async items => {
       for (const item of items) {
-        clipboard.push(await item.blob.text());
+        clipboard.push(...item.data);
       }
     },
   };
   globalThis.ClipboardItem = class ClipboardItem {
     constructor(obj) {
-      this.blob = Object.values(obj)[0];
+      this.data = Object.values(obj);
     }
   };
 });
@@ -24,17 +24,26 @@ beforeEach(() => clipboard = []);
 
 test("string", async () => {
   expect(await clippie("foo")).toEqual(true);
+  expect(clipboard.length).toEqual(1);
   expect(clipboard).toEqual(["foo"]);
-});
-
-test("strings", async () => {
-  expect(await clippie(["foo", "bar"])).toEqual(true);
-  expect(clipboard).toEqual(["foo", "bar"]);
 });
 
 test("blob", async () => {
-  const blob = new Blob(["foo"], {type: "text/plain"});
-  expect(await clippie(blob)).toEqual(true);
+  const foo = new Blob(["foo"], {type: "text/plain"});
+  expect(await clippie(foo)).toEqual(true);
   expect(clipboard.length).toEqual(1);
-  expect(clipboard).toEqual(["foo"]);
+  expect(clipboard).toEqual([foo]);
+});
+
+test("strings", async () => {
+  expect(await clippie(["foo", "bar"], {reject: true})).toEqual(true);
+  expect(clipboard.length).toEqual(1);
+  expect(clipboard).toEqual(["bar"]);
+});
+
+test("blob and strings", async () => {
+  const bar = new Blob(["bar"], {type: "text/plain"});
+  expect(await clippie(["foo", bar], {reject: true})).toEqual(true);
+  expect(clipboard.length).toEqual(1);
+  expect(clipboard).toEqual([bar]);
 });

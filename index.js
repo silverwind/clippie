@@ -1,36 +1,40 @@
-export async function clippie(data, {reject = false} = {}) {
+export async function clippie(content, {reject = false} = {}) {
   try {
-    const contents = Array.isArray(data) ? data : [data];
-    let numSuccess = 0;
-    for (const content of contents) {
-      if (content instanceof Blob) {
-        const item = new ClipboardItem({[content.type]: content});
-        await navigator.clipboard.write([item]);
-        numSuccess++;
-      } else {
-        try {
-          await navigator.clipboard.writeText(String(content));
-          numSuccess++;
-        } catch {
-          if (!document.execCommand) continue;
-          const el = document.createElement("textarea");
-          el.value = String(content);
-          el.style.clipPath = "inset(50%)";
-          el.ariaHidden = "true";
-          document.body.append(el);
-          try {
-            el.select();
-            const success = document.execCommand("copy");
-            if (success) numSuccess++;
-          } finally {
-            el.remove();
-          }
-        }
-      }
+    if (Array.isArray(content)) {
+      await navigator.clipboard.write([
+        new ClipboardItem(Object.fromEntries(content.map(c => [c.type ?? "text/plain", c]))),
+      ]);
+      return true;
+    } else if (content instanceof Blob) {
+      await navigator.clipboard.write([new ClipboardItem({[content.type]: content})]);
+      return true;
+    } else {
+      return copyText(String(content));
     }
-    return numSuccess === contents.length;
   } catch (err) {
     if (reject) throw err;
     return false;
   }
+}
+
+async function copyText(str) {
+  try {
+    await navigator.clipboard.writeText(str);
+    return true;
+  } catch {
+    if (!document.execCommand) return;
+    const el = document.createElement("textarea");
+    el.value = str;
+    el.style.clipPath = "inset(50%)";
+    el.ariaHidden = "true";
+    document.body.append(el);
+    try {
+      el.select();
+      const success = document.execCommand("copy");
+      if (success) return true;
+    } finally {
+      el.remove();
+    }
+  }
+  return false;
 }
