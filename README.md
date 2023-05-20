@@ -14,7 +14,7 @@ const success = await clippie("text to copy");
 // copy image
 const success = await clippie(imageBlob);
 
-// copy image and text
+// copy image and text at once
 const success = await clippie([imageBlob, "image description"]);
 ```
 
