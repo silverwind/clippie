@@ -35,38 +35,32 @@ beforeEach(() => clipboard = []);
 
 test("string", async () => {
   expect(await clippie("foo")).toEqual(true);
-  expect(clipboard.length).toEqual(1);
   expect(clipboard).toEqual(["foo"]);
 });
 
 test("blob", async () => {
   const foo = new Blob(["foo"], {type: "text/plain"});
   expect(await clippie(foo)).toEqual(true);
-  expect(clipboard.length).toEqual(1);
   expect(clipboard).toEqual([foo]);
 });
 
 test("strings", async () => {
   expect(await clippie(["foo", "bar"], {reject: true})).toEqual(true);
-  expect(clipboard.length).toEqual(1);
   expect(clipboard).toEqual(["bar"]);
 });
 
 test("blob and strings", async () => {
   const bar = new Blob(["bar"], {type: "text/plain"});
   expect(await clippie(["foo", bar], {reject: true})).toEqual(true);
-  expect(clipboard.length).toEqual(1);
   expect(clipboard).toEqual([bar]);
 });
 
 test("image", async () => {
   expect(await clippie([img], {reject: true})).toEqual(true);
-  expect(clipboard.length).toEqual(1);
   expect(clipboard).toEqual([img]);
 });
 
 test("image and text", async () => {
   expect(await clippie([img, "text"], {reject: true})).toEqual(true);
-  expect(clipboard.length).toEqual(2);
   expect(clipboard).toEqual([img, "text"]);
 });
