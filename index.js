@@ -1,5 +1,8 @@
 export async function clippie(content, {reject = false} = {}) {
   try {
+    if (!navigator?.clipboard?.write) { // navigator.clipboard is undefined on insecure origin
+      return fallback(content);
+    }
     if (Array.isArray(content)) {
       await navigator.clipboard.write([
         new ClipboardItem(Object.fromEntries(content.map(c => [c.type ?? "text/plain", c]))),
@@ -13,24 +16,28 @@ export async function clippie(content, {reject = false} = {}) {
         await navigator.clipboard.writeText(String(content));
         return true;
       } catch {
-        if (!document.execCommand) return false;
-        const el = document.createElement("textarea");
-        el.value = String(content);
-        el.style.clipPath = "inset(50%)";
-        el.ariaHidden = "true";
-        document.body.append(el);
-        try {
-          el.select();
-          const success = document.execCommand("copy");
-          if (success) return true;
-        } finally {
-          el.remove();
-        }
+        fallback(content);
       }
       return false;
     }
   } catch (err) {
     if (reject) throw err;
     return false;
+  }
+}
+
+function fallback(content) {
+  if (!document.execCommand) return false;
+  const el = document.createElement("textarea");
+  el.value = String(content);
+  el.style.clipPath = "inset(50%)";
+  el.ariaHidden = "true";
+  document.body.append(el);
+  try {
+    el.select();
+    const success = document.execCommand("copy");
+    if (success) return true;
+  } finally {
+    el.remove();
   }
 }
