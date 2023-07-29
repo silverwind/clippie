@@ -1,9 +1,9 @@
 export async function clippie(content, {reject = false} = {}) {
   try {
-    if (!navigator?.clipboard) { // navigator.clipboard is undefined on insecure origin
-      return fallback(content);
-    }
     if (Array.isArray(content)) {
+      if (!navigator?.clipboard && content.length === 1 && typeof content[0] === "string") {
+        return fallback(content);
+      }
       await navigator.clipboard.write([
         new ClipboardItem(Object.fromEntries(content.map(c => [c.type ?? "text/plain", c]))),
       ]);
