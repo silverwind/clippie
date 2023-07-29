@@ -16,9 +16,8 @@ export async function clippie(content, {reject = false} = {}) {
         await navigator.clipboard.writeText(String(content));
         return true;
       } catch {
-        fallback(content);
+        return fallback(content);
       }
-      return false;
     }
   } catch (err) {
     if (reject) throw err;
@@ -36,7 +35,7 @@ function fallback(content) {
   try {
     el.select();
     const success = document.execCommand("copy");
-    if (success) return true;
+    return success !== false;
   } finally {
     el.remove();
   }
