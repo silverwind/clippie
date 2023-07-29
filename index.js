@@ -1,6 +1,6 @@
 export async function clippie(content, {reject = false} = {}) {
   try {
-    if (!navigator?.clipboard?.write) { // navigator.clipboard is undefined on insecure origin
+    if (!navigator?.clipboard) { // navigator.clipboard is undefined on insecure origin
       return fallback(content);
     }
     if (Array.isArray(content)) {
