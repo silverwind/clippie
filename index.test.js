@@ -1,5 +1,4 @@
 import {clippie} from "./index.js";
-import {Blob} from "blob-polyfill";
 
 let clipboard = [];
 
