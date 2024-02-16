@@ -34,8 +34,7 @@ function fallback(content) {
   document.body.append(el);
   try {
     el.select();
-    const success = document.execCommand("copy");
-    return success !== false;
+    return document.execCommand("copy");
   } finally {
     el.remove();
   }
