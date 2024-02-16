@@ -1,4 +1,4 @@
-<!DOCTYPE html><html style="color-scheme: dark;"><head></head><body>
+<!doctype html><html style="color-scheme: light dark"><head></head><body>
   <button class="copytext">copy text</button>
   <button class="copysvg">copy svg</button>
   <button class="copyimg">copy image</button>
@@ -6,17 +6,7 @@
   <pre></pre>
 <script type="module">
   import {clippie} from "./index.js";
-
   const pre = document.querySelector("pre");
-
-  function base64ToArrayBuffer(base64) {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  }
 
   async function copy(content) {
     try {
@@ -39,8 +29,9 @@
   });
 
   document.querySelector(".copyimg").addEventListener("click", async () => {
+    const blob = await (await fetch("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAADUlEQVQIHQECAP3/AAAAAgABzePRKwAAAABJRU5ErkJggg==")).blob();
     await copy(
-      new Blob([base64ToArrayBuffer("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"}),
+      blob,
       `image description`,
     );
   });
