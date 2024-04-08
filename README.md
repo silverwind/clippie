@@ -29,7 +29,7 @@ Returns `true` when all content was successfully copied, `false` when not. Will 
 
 ## Notes
 
-Firefox needs `dom.events.asyncClipboard.clipboardItem` in `about:config` to enable image copying. Track [Bug 1809106](https://bugzilla.mozilla.org/show_bug.cgi?id=1809106) for updates.
+Firefox before 122 needs `dom.events.asyncClipboard.clipboardItem` in `about:config` to enable image copying. Track [Bug 1809106](https://bugzilla.mozilla.org/show_bug.cgi?id=1809106) for updates.
 
 See [index.html](./index.html) for various example uses.
 
