@@ -18,6 +18,8 @@ const success = await clippie(imageBlob);
 const success = await clippie([imageBlob, "image description"]);
 ```
 
+See [index.html](./index.html) for more example.
+
 ## API
 ### clippie(content, [options])
 
@@ -26,11 +28,5 @@ const success = await clippie([imageBlob, "image description"]);
   - `reject`: *Boolean*: Whether to reject on unexpected errors. Default: `false`.
 
 Returns `true` when all content was successfully copied, `false` when not. Will never throw unless `reject` is `true`.
-
-## Notes
-
-Firefox before 122 needs `dom.events.asyncClipboard.clipboardItem` in `about:config` to enable image copying. Track [Bug 1809106](https://bugzilla.mozilla.org/show_bug.cgi?id=1809106) for updates.
-
-See [index.html](./index.html) for various example uses.
 
 © [silverwind](https://github.com/silverwind), distributed under BSD licence
