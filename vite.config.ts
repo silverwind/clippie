@@ -1,7 +1,6 @@
 import {defineConfig} from "vite";
 import {fileURLToPath} from "node:url";
 import dtsPlugin from "vite-plugin-dts";
-import {builtinModules} from "node:module";
 import {stringPlugin} from "vite-string-plugin";
 
 export default defineConfig({
@@ -18,9 +17,6 @@ export default defineConfig({
       entry: [fileURLToPath(new URL("index.ts", import.meta.url))],
       formats: ["es"],
     },
-    rollupOptions: {
-      external: builtinModules.map(module => `node:${module}`),
-    }
   },
   plugins: [
     dtsPlugin({exclude: [
