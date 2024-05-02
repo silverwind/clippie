@@ -17,10 +17,10 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 beforeAll(() => {
   // @ts-ignore
   navigator.clipboard = {
-    writeText: async (text: string) => { // eslint-disable-line @typescript-eslint/require-await
+    writeText: (text: string) => {
       return clipboard.push(text);
     },
-    write: async (items: any[]) => { // eslint-disable-line @typescript-eslint/require-await
+    write: (items: any[]) => {
       for (const item of items) {
         clipboard.push(...item.data);
       }

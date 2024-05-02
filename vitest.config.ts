@@ -1,5 +1,4 @@
 import {defineConfig} from "vitest/config";
-// @ts-ignore
 import {frontend} from "vitest-config-silverwind";
 
 export default defineConfig(frontend({
