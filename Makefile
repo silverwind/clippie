@@ -29,7 +29,7 @@ test-update: node_modules
 .PHONY: build
 build: node_modules $(DIST_FILES)
 
-$(DIST_FILES): $(SOURCE_FILES) package.json vite.config.ts
+$(DIST_FILES): $(SOURCE_FILES) package-lock.json vite.config.ts
 	npx vite build
 
 .PHONY: publish
@@ -45,16 +45,16 @@ update: node_modules
 	@touch node_modules
 
 .PHONY: path
-patch: node_modules lint test
+patch: node_modules lint test build
 	npx versions patch package.json package-lock.json
 	@$(MAKE) --no-print-directory publish
 
 .PHONY: minor
-minor: node_modules lint test
+minor: node_modules lint test build
 	npx versions minor package.json package-lock.json
 	@$(MAKE) --no-print-directory publish
 
 .PHONY: major
-major: node_modules lint test
+major: node_modules lint test build
 	npx versions major package.json package-lock.json
 	@$(MAKE) --no-print-directory publish
