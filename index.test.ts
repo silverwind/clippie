@@ -1,10 +1,10 @@
-import {clippie} from "./index.js";
+import {clippie} from "./index.ts";
 
-let clipboard = [];
+let clipboard: string[] = [];
 
 const img = new Blob([base64ToArrayBuffer("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"});
 
-function base64ToArrayBuffer(base64) {
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
   const binaryString = atob(base64);
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
@@ -15,22 +15,27 @@ function base64ToArrayBuffer(base64) {
 
 // nothing is implemented in jsdom
 beforeAll(() => {
+  // @ts-ignore
   navigator.clipboard = {
-    writeText: async text => clipboard.push(text),
-    write: async items => {
+    writeText: async (text: string) => { // eslint-disable-line @typescript-eslint/require-await
+      return clipboard.push(text);
+    },
+    write: async (items: any[]) => { // eslint-disable-line @typescript-eslint/require-await
       for (const item of items) {
         clipboard.push(...item.data);
       }
     },
   };
+  // @ts-ignore
   globalThis.ClipboardItem = class ClipboardItem {
-    constructor(obj) {
+    constructor(obj: any) {
+      // @ts-ignore
       this.data = Object.values(obj);
     }
   };
 });
 
-beforeEach(() => clipboard = []);
+beforeEach(() => { clipboard = []; });
 
 test("string", async () => {
   expect(await clippie("foo")).toEqual(true);

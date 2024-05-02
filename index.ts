@@ -1,11 +1,21 @@
-export async function clippie(content, {reject = false} = {}) {
+type Content = string | Blob | (string | Blob)[];
+type Success = boolean;
+
+type Opts = {
+  /** Whether to reject on unexpeced errors */
+  reject: boolean;
+}
+
+export async function clippie(content: Content, {reject = false}: Opts = {reject: false}): Promise<Success> {
   try {
     if (Array.isArray(content)) {
       if (!navigator?.clipboard && content.length === 1 && typeof content[0] === "string") {
-        return fallback(content);
+        return fallback(content[0]);
       }
       await navigator.clipboard.write([
-        new ClipboardItem(Object.fromEntries(content.map(c => [c.type ?? "text/plain", c]))),
+        new ClipboardItem(Object.fromEntries(content.map(c => {
+          return [(c as any)?.type ?? "text/plain", c];
+        }))),
       ]);
       return true;
     } else if (content instanceof Blob) {
@@ -25,8 +35,8 @@ export async function clippie(content, {reject = false} = {}) {
   }
 }
 
-function fallback(content) {
-  if (!document.execCommand) return false;
+function fallback(content: string): boolean {
+  if (!document.execCommand) return false; // eslint-disable-line etc/no-deprecated
   const el = document.createElement("textarea");
   el.value = String(content);
   el.style.clipPath = "inset(50%)";
@@ -34,7 +44,7 @@ function fallback(content) {
   document.body.append(el);
   try {
     el.select();
-    return document.execCommand("copy");
+    return document.execCommand("copy"); // eslint-disable-line etc/no-deprecated
   } finally {
     el.remove();
   }
