@@ -2,7 +2,7 @@ type Content = string | Blob | (string | Blob)[];
 type Success = boolean;
 
 type Opts = {
-  /** Whether to reject on unexpeced errors */
+  /** Whether to reject on unexpected errors. */
   reject: boolean;
 }
 
