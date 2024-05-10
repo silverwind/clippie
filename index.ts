@@ -1,12 +1,12 @@
-type Content = string | Blob | (string | Blob)[];
+type ClippieContent = string | Blob | (string | Blob)[];
 type Success = boolean;
 
-type Opts = {
+type ClippieOpts = {
   /** Whether to reject on unexpected errors. */
-  reject: boolean;
+  reject?: boolean;
 }
 
-export async function clippie(content: Content, {reject = false}: Opts = {reject: false}): Promise<Success> {
+export async function clippie(content: ClippieContent, {reject = false}: ClippieOpts = {}): Promise<Success> {
   try {
     if (Array.isArray(content)) {
       if (!navigator?.clipboard && content.length === 1 && typeof content[0] === "string") {
