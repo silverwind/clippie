@@ -1,6 +1,6 @@
 import {defineConfig} from "vite";
-import {lib} from "vite-config-silverwind";
+import {webLib} from "vite-config-silverwind";
 
-export default defineConfig(lib({
+export default defineConfig(webLib({
   url: import.meta.url,
 }));
