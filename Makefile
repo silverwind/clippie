@@ -26,6 +26,10 @@ test: node_modules
 test-update: node_modules
 	npx vitest -u
 
+.PHONY: watch
+watch: node_modules $(SOURCE_FILES) package-lock.json vite.config.ts
+	npx vite build --watch
+
 .PHONY: build
 build: node_modules $(DIST_FILES)
 
