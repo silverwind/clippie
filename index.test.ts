@@ -15,7 +15,7 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 
 // nothing is implemented in jsdom
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error
   navigator.clipboard = {
     writeText: (text: string) => {
       return clipboard.push(text);
@@ -26,10 +26,10 @@ beforeAll(() => {
       }
     },
   };
-  // @ts-ignore
+  // @ts-expect-error
   globalThis.ClipboardItem = class ClipboardItem {
     constructor(obj: any) {
-      // @ts-ignore
+      // @ts-expect-error
       this.data = Object.values(obj);
     }
   };
