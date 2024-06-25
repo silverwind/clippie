@@ -36,7 +36,7 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
 }
 
 function fallback(content: string): boolean {
-  if (!document.execCommand) return false; // eslint-disable-line etc/no-deprecated
+  if (!document.execCommand) return false; // eslint-disable-line deprecation/deprecation
   const el = document.createElement("textarea");
   el.value = String(content);
   el.style.clipPath = "inset(50%)";
@@ -44,7 +44,7 @@ function fallback(content: string): boolean {
   document.body.append(el);
   try {
     el.select();
-    return document.execCommand("copy"); // eslint-disable-line etc/no-deprecated
+    return document.execCommand("copy"); // eslint-disable-line deprecation/deprecation
   } finally {
     el.remove();
   }
