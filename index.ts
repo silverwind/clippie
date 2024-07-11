@@ -1,12 +1,15 @@
-type ClippieContent = string | Blob | (string | Blob)[];
-type Success = boolean;
+/** The content to copy */
+export type ClippieContent = string | Blob | (string | Blob)[];
 
-type ClippieOpts = {
+/** A boolean indicating whether the copying was successful */
+export type ClippieResult = boolean;
+
+export type ClippieOpts = {
   /** Whether to reject on unexpected errors. */
   reject?: boolean;
 }
 
-export async function clippie(content: ClippieContent, {reject = false}: ClippieOpts = {}): Promise<Success> {
+export async function clippie(content: ClippieContent, {reject = false}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
     if (Array.isArray(content)) {
       if (!navigator?.clipboard && content.length === 1 && typeof content[0] === "string") {
