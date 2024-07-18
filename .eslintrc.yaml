@@ -2,6 +2,3 @@ root: true
 extends:
   - silverwind
   - silverwind-typescript
-
-rules:
-  import/no-unused-modules: [0]
