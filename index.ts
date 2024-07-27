@@ -12,8 +12,10 @@ export type ClippieOpts = {
 export async function clippie(content: ClippieContent, {reject = false}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
     if (Array.isArray(content)) {
-      if (!navigator?.clipboard && content.length === 1 && typeof content[0] === "string") {
-        return fallback(content[0]);
+      if (!navigator?.clipboard?.write) {
+        for (const c of content) {
+          if (typeof c === "string") fallback(c);
+        }
       }
       await navigator.clipboard.write([
         new ClipboardItem(Object.fromEntries(content.map(c => {
