@@ -1,14 +1,16 @@
 /** The content to copy */
-export type ClippieContent = string | Blob | (string | Blob)[];
+export type ClippieContent = string | Blob | Array<string | Blob>;
 
 /** A boolean indicating whether the copying was successful */
 export type ClippieResult = boolean;
 
+/** Options for the module */
 export type ClippieOpts = {
   /** Whether to reject on unexpected errors. */
   reject?: boolean;
 }
 
+/** Copies `content` to the clipboard, which can be text, images or a array of these. */
 export async function clippie(content: ClippieContent, {reject = false}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
     if (Array.isArray(content)) {
