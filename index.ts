@@ -2,7 +2,7 @@
 export type ClippieContent = string | Blob | Array<string | Blob>;
 
 /** A boolean indicating whether the copying was successful. In case the browser does not support the async
- *  clipboard API, this holds the return value of `document.execCommand` which may not necessarily be a boolean. */
+ *  clipboard API, this holds the return value of `document.execCommand`. */
 export type ClippieResult = boolean;
 
 /** Options for the module */
