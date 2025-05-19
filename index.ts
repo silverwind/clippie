@@ -1,7 +1,8 @@
 /** The content to copy */
 export type ClippieContent = string | Blob | Array<string | Blob>;
 
-/** A boolean indicating whether the copying was successful */
+/** A boolean indicating whether the copying was successful. In case the browser does not support the async
+ *  clipboard API, this holds the return value of `document.execCommand` which may not necessarily be a boolean. */
 export type ClippieResult = boolean;
 
 /** Options for the module */
@@ -16,8 +17,12 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
     if (Array.isArray(content)) {
       if (!navigator?.clipboard?.write) {
         for (const c of content) {
-          if (typeof c === "string") fallback(c);
+          if (typeof c === "string") {
+            const result = fallback(c);
+            if (!result) return result;
+          }
         }
+        return true;
       }
       await navigator.clipboard.write([
         new ClipboardItem(Object.fromEntries(content.map(c => {
