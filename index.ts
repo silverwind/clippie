@@ -9,7 +9,7 @@ export type ClippieResult = boolean;
 export type ClippieOpts = {
   /** Whether to reject on unexpected errors. */
   reject?: boolean;
-}
+};
 
 /** Copies `content` to the clipboard, which can be text, images or a array of these. */
 export async function clippie(content: ClippieContent, {reject = false}: ClippieOpts = {}): Promise<ClippieResult> {
