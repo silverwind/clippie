@@ -25,7 +25,11 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
       }
       await navigator.clipboard.write([
         new ClipboardItem(Object.fromEntries(content.map(c => {
-          return [(c as any)?.type ?? "text/plain", c];
+          if (c instanceof Blob) {
+            return [c.type ?? "text/plain", c];
+          } else {
+            return ["text/plain", c];
+          }
         }))),
       ]);
       return true;
