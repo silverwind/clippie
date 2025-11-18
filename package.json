@@ -14,17 +14,17 @@
     "dist"
   ],
   "devDependencies": {
-    "@types/node": "24.10.0",
+    "@types/node": "24.10.1",
     "eslint": "9.39.1",
-    "eslint-config-silverwind": "111.0.2",
-    "jsdom": "27.1.0",
-    "tsdown": "0.16.1",
+    "eslint-config-silverwind": "111.0.8",
+    "jsdom": "27.2.0",
+    "tsdown": "0.16.5",
     "tsdown-config-silverwind": "1.5.2",
     "typescript": "5.9.3",
-    "typescript-config-silverwind": "12.0.0",
+    "typescript-config-silverwind": "13.0.2",
     "updates": "16.9.1",
     "versions": "14.0.2",
-    "vitest": "4.0.8",
+    "vitest": "4.0.10",
     "vitest-config-silverwind": "10.4.2"
   }
 }
