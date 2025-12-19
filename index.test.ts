@@ -1,6 +1,6 @@
 import {clippie} from "./index.ts";
 
-let clipboard: string[] = [];
+let clipboard: Array<string> = [];
 
 const img = new Blob([base64ToArrayBuffer("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"});
 
@@ -20,7 +20,7 @@ beforeAll(() => {
     writeText: (text: string) => {
       return clipboard.push(text);
     },
-    write: (items: any[]) => {
+    write: (items: Array<any>) => {
       for (const item of items) {
         clipboard.push(...item.data);
       }
