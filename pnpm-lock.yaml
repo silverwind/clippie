@@ -17,6 +17,9 @@ importers:
       eslint-config-silverwind:
         specifier: 115.0.3
         version: 115.0.3(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      jest-extended:
+        specifier: 7.0.0
+        version: 7.0.0(typescript@5.9.3)
       jsdom:
         specifier: 27.3.0
         version: 27.3.0
@@ -38,6 +41,9 @@ importers:
       versions:
         specifier: 14.0.3
         version: 14.0.3
+      vite:
+        specifier: 7.3.1
+        version: 7.3.1(@types/node@25.0.3)(jiti@2.6.1)
       vitest:
         specifier: 4.0.16
         version: 4.0.16(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.3.0)
