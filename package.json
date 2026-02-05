@@ -16,7 +16,7 @@
   "devDependencies": {
     "@types/node": "25.0.3",
     "eslint": "9.39.2",
-    "eslint-config-silverwind": "115.0.3",
+    "eslint-config-silverwind": "120.1.2",
     "jest-extended": "7.0.0",
     "jsdom": "27.3.0",
     "tsdown": "0.18.1",
