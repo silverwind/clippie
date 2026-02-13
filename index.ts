@@ -54,11 +54,16 @@ function fallback(content: string): boolean {
   if (!document.execCommand) return false; // eslint-disable-line @typescript-eslint/no-deprecated
   const el = document.createElement("textarea");
   el.value = String(content);
+  el.setAttribute("readonly", "");
   el.style.clipPath = "inset(50%)";
+  el.style.fontSize = "12pt";
+  el.style.whiteSpace = "pre";
   el.ariaHidden = "true";
   document.body.append(el);
   try {
     el.select();
+    el.selectionStart = 0;
+    el.selectionEnd = content.length;
     return document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
   } finally {
     el.remove();
