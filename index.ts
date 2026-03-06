@@ -38,7 +38,7 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
       return true;
     } else {
       try {
-        await navigator.clipboard.writeText(String(content));
+        await navigator.clipboard.writeText(content);
         return true;
       } catch {
         return fallback(content);
@@ -51,9 +51,9 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
 }
 
 function fallback(content: string): boolean {
-  if (!document.execCommand) return false; // eslint-disable-line @typescript-eslint/no-deprecated
+  if (!document.execCommand) return false;
   const el = document.createElement("textarea");
-  el.value = String(content);
+  el.value = content;
   el.setAttribute("readonly", "");
   el.style.clipPath = "inset(50%)";
   el.style.fontSize = "12pt";
@@ -64,7 +64,7 @@ function fallback(content: string): boolean {
     el.select();
     el.selectionStart = 0;
     el.selectionEnd = content.length;
-    return document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
+    return document.execCommand("copy");
   } finally {
     el.remove();
   }
