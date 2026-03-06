@@ -51,7 +51,7 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
 }
 
 function fallback(content: string): boolean {
-  if (!document.execCommand) return false;
+  if (!document.execCommand) return false; // eslint-disable-line @typescript-eslint/no-deprecated
   const el = document.createElement("textarea");
   el.value = content;
   el.setAttribute("readonly", "");
@@ -64,7 +64,7 @@ function fallback(content: string): boolean {
     el.select();
     el.selectionStart = 0;
     el.selectionEnd = content.length;
-    return document.execCommand("copy");
+    return document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
   } finally {
     el.remove();
   }
