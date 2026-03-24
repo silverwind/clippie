@@ -18,6 +18,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260324.1",
     "eslint": "10.1.0",
     "eslint-config-silverwind": "127.1.4",
+    "happy-dom": "20.8.7",
     "jest-extended": "7.0.0",
     "tsdown": "0.21.4",
     "tsdown-config-silverwind": "2.0.2",
