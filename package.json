@@ -14,22 +14,22 @@
     "dist"
   ],
   "devDependencies": {
-    "@types/node": "25.5.0",
-    "@typescript/native-preview": "7.0.0-dev.20260325.1",
-    "eslint": "10.1.0",
-    "eslint-config-silverwind": "127.1.4",
-    "happy-dom": "20.8.8",
+    "@types/node": "25.6.0",
+    "@typescript/native-preview": "7.0.0-dev.20260413.1",
+    "eslint": "10.2.0",
+    "eslint-config-silverwind": "131.0.4",
+    "happy-dom": "20.8.9",
     "jest-extended": "7.0.0",
-    "tsdown": "0.21.5",
-    "tsdown-config-silverwind": "2.0.3",
+    "tsdown": "0.21.7",
+    "tsdown-config-silverwind": "2.0.5",
     "typescript": "5.9.3",
-    "typescript-config-silverwind": "16.1.0",
-    "updates": "17.11.4",
-    "updates-config-silverwind": "2.0.1",
+    "typescript-config-silverwind": "17.0.0",
+    "updates": "17.15.2",
+    "updates-config-silverwind": "2.1.0",
     "versions": "14.3.1",
-    "vite": "8.0.2",
-    "vitest": "4.1.1",
-    "vitest-config-silverwind": "11.0.2"
+    "vite": "8.0.8",
+    "vitest": "4.1.4",
+    "vitest-config-silverwind": "11.1.4"
   },
   "packageManager": "pnpm@10.33.0"
 }
