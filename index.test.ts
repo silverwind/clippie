@@ -71,3 +71,19 @@ test("image and text", async () => {
   expect((await item.getType("image/png")).size).toEqual(img.size);
   expect(await (await item.getType("text/plain")).text()).toEqual("text");
 });
+
+test("blob with empty type", async () => {
+  const clipboard = mockClipboard();
+  const foo = new Blob(["foo"]);
+  expect(await clippie(foo, {reject: true})).toEqual(true);
+  expect(clipboard).toHaveLength(1);
+  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
+});
+
+test("blob with empty type in array", async () => {
+  const clipboard = mockClipboard();
+  const foo = new Blob(["foo"]);
+  expect(await clippie([foo], {reject: true})).toEqual(true);
+  expect(clipboard).toHaveLength(1);
+  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
+});

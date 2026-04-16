@@ -22,7 +22,7 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
       }
     }
     if (content instanceof Blob) {
-      await navigator.clipboard.write([new ClipboardItem({[content.type]: content})]);
+      await navigator.clipboard.write([new ClipboardItem({[content.type || "text/plain"]: content})]);
       return true;
     }
     if (!navigator?.clipboard?.write) {
