@@ -11,7 +11,7 @@ export type ClippieOpts = {
 };
 
 /** Copies `content` to the clipboard, which can be text, images or an array of these */
-export async function clippie(content: ClippieContent, {reject = false}: ClippieOpts = {}): Promise<ClippieResult> {
+export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
     if (typeof content === "string") {
       try {
@@ -21,18 +21,13 @@ export async function clippie(content: ClippieContent, {reject = false}: Clippie
         return fallback(content);
       }
     }
-    if (content instanceof Blob) {
-      await navigator.clipboard.write([new ClipboardItem({[content.type || "text/plain"]: content})]);
-      return true;
-    }
+    const items = [content].flat();
     if (!navigator?.clipboard?.write) {
-      for (const c of content) {
-        if (typeof c === "string" && !fallback(c)) return false;
-      }
+      for (const c of items) if (typeof c !== "string" || !fallback(c)) return false;
       return true;
     }
     await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
-      content.map(c => [c instanceof Blob ? c.type || "text/plain" : "text/plain", c]),
+      items.map(c => [(c as Blob).type || "text/plain", c]),
     ))]);
     return true;
   } catch (err) {
@@ -51,8 +46,7 @@ function fallback(content: string): boolean {
   document.body.append(el);
   try {
     el.select();
-    el.selectionStart = 0;
-    el.selectionEnd = content.length;
+    el.setSelectionRange(0, content.length);
     return document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
   } finally {
     el.remove();

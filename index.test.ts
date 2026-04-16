@@ -142,6 +142,13 @@ describe.sequential("fallback and error paths", () => {
     expect(await clippie(["foo", "bar"])).toEqual(false);
   });
 
+  test("blob returns false when navigator.clipboard.write is missing", async () => {
+    mockClipboard({write: false});
+    mockExecCommand();
+    expect(await clippie(new Blob(["x"], {type: "text/plain"}))).toEqual(false);
+    expect(await clippie(["foo", new Blob(["x"])])).toEqual(false);
+  });
+
   test("rethrows when reject is true and write fails", async () => {
     mockClipboard({write: () => Promise.reject(new Error("nope"))});
     await expect(clippie(new Blob(["x"], {type: "text/plain"}), {reject: true})).rejects.toThrow("nope");
