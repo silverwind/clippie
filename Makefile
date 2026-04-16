@@ -22,6 +22,10 @@ lint-fix: node_modules
 test: node_modules
 	pnpm exec vitest
 
+.PHONY: test-coverage
+test-coverage: node_modules
+	pnpm exec vitest --coverage
+
 .PHONY: test-update
 test-update: node_modules
 	pnpm exec vitest -u
