@@ -154,6 +154,12 @@ describe.sequential("fallback and error paths", () => {
     await expect(clippie(new Blob(["x"], {type: "text/plain"}), {reject: true})).rejects.toThrow("nope");
   });
 
+  test("rethrows when reject is true, writeText rejects, and execCommand is missing", async () => {
+    mockClipboard({writeText: () => Promise.reject(new Error("denied"))});
+    removeExecCommand();
+    await expect(clippie("foo", {reject: true})).rejects.toThrow();
+  });
+
   test("returns false when reject is false and write fails", async () => {
     mockClipboard({write: () => Promise.reject(new Error("nope"))});
     expect(await clippie(new Blob(["x"], {type: "text/plain"}))).toEqual(false);

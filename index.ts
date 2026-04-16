@@ -22,10 +22,7 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
       }
     }
     const items = [content].flat();
-    if (!navigator?.clipboard?.write) {
-      for (const c of items) if (typeof c !== "string" || !fallback(c)) return false;
-      return true;
-    }
+    if (!navigator?.clipboard?.write) return items.every(c => typeof c === "string" && fallback(c));
     await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
       items.map(c => [(c as Blob).type || "text/plain", c]),
     ))]);
@@ -37,7 +34,6 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
 }
 
 function fallback(content: string): boolean {
-  if (!document.execCommand) return false; // eslint-disable-line @typescript-eslint/no-deprecated
   const el = document.createElement("textarea");
   el.value = content;
   el.readOnly = true;
