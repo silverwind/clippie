@@ -47,9 +47,6 @@ importers:
       versions:
         specifier: 15.0.0
         version: 15.0.0
-      vite:
-        specifier: 8.0.9
-        version: 8.0.9(@types/node@25.6.0)
       vitest:
         specifier: 4.1.4
         version: 4.1.4(@types/node@25.6.0)(@vitest/coverage-v8@4.1.4)(happy-dom@20.9.0)(vite@8.0.9(@types/node@25.6.0))
