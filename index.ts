@@ -13,20 +13,14 @@ export type ClippieOpts = {
 /** Copies `content` to the clipboard, which can be text, images or an array of these */
 export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
-    if (typeof content === "string") {
-      try {
-        await navigator.clipboard.writeText(content);
-        return true;
-      } catch {
-        return fallback(content);
-      }
-    }
     const items = [content].flat();
-    if (!navigator?.clipboard?.write) return items.every(c => typeof c === "string" && fallback(c));
-    await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
-      items.map(c => [(c as Blob).type || "text/plain", c]),
-    ))]);
-    return true;
+    if (navigator?.clipboard?.write) {
+      await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
+        items.map(c => [(c as Blob).type || "text/plain", c]),
+      ))]);
+      return true;
+    }
+    return items.every(c => typeof c === "string" && fallback(c));
   } catch (err) {
     if (reject) throw err;
     return false;

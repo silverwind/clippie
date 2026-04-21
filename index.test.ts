@@ -50,7 +50,8 @@ function removeExecCommand() {
 test("string", async () => {
   const clipboard = mockClipboard();
   expect(await clippie("foo")).toEqual(true);
-  expect(clipboard).toEqual(["foo"]);
+  expect(clipboard).toHaveLength(1);
+  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
 });
 
 test("blob", async () => {
@@ -114,16 +115,16 @@ describe.sequential("fallback and error paths", () => {
     (document as any).execCommand = originalExecCommand;
   });
 
-  test("string falls back to execCommand when writeText rejects", async () => {
-    mockClipboard({writeText: () => Promise.reject(new Error("denied"))});
+  test("string falls back to execCommand when clipboard.write is missing", async () => {
+    mockClipboard({write: false});
     const calls = mockExecCommand();
     expect(await clippie("foo")).toEqual(true);
     expect(calls).toEqual([{cmd: "copy", value: "foo"}]);
     expect(document.querySelectorAll("textarea")).toHaveLength(0);
   });
 
-  test("string returns false when writeText rejects and execCommand is missing", async () => {
-    mockClipboard({writeText: () => Promise.reject(new Error("denied"))});
+  test("string returns false when clipboard.write and execCommand are missing", async () => {
+    mockClipboard({write: false});
     removeExecCommand();
     expect(await clippie("foo")).toEqual(false);
   });
@@ -152,12 +153,6 @@ describe.sequential("fallback and error paths", () => {
   test("rethrows when reject is true and write fails", async () => {
     mockClipboard({write: () => Promise.reject(new Error("nope"))});
     await expect(clippie(new Blob(["x"], {type: "text/plain"}), {reject: true})).rejects.toThrow("nope");
-  });
-
-  test("rethrows when reject is true, writeText rejects, and execCommand is missing", async () => {
-    mockClipboard({writeText: () => Promise.reject(new Error("denied"))});
-    removeExecCommand();
-    await expect(clippie("foo", {reject: true})).rejects.toThrow();
   });
 
   test("returns false when reject is false and write fails", async () => {
