@@ -19,7 +19,10 @@ lint-fix: node_modules
 	pnpm exec tsgo
 
 .PHONY: test
-test: node_modules
+test: test-unit test-e2e
+
+.PHONY: test-unit
+test-unit: node_modules
 	pnpm exec vitest
 
 .PHONY: test-coverage
@@ -29,6 +32,10 @@ test-coverage: node_modules
 .PHONY: test-update
 test-update: node_modules
 	pnpm exec vitest -u
+
+.PHONY: test-e2e
+test-e2e: node_modules build
+	pnpm exec playwright test
 
 .PHONY: watch
 watch: node_modules $(SOURCE_FILES) pnpm-lock.yaml package.json tsdown.config.ts

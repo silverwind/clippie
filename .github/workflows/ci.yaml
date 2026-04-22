@@ -19,4 +19,17 @@ jobs:
           cache: pnpm
           node-version: ${{matrix.node}}
       - run: make lint
-      - run: make test
+      - run: make test-unit
+
+  e2e:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          cache: pnpm
+          node-version: 24
+      - run: make deps
+      - run: pnpm exec playwright install chromium firefox webkit
+      - run: make test-e2e

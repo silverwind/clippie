@@ -14,6 +14,7 @@
     "dist"
   ],
   "devDependencies": {
+    "@playwright/test": "1.59.1",
     "@types/node": "25.6.0",
     "@typescript/native-preview": "7.0.0-dev.20260420.1",
     "eslint": "10.2.1",
