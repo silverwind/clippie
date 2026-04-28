@@ -2,6 +2,13 @@
   "name": "clippie",
   "version": "4.1.14",
   "description": "Teeny-tiny browser clipboard copy",
+  "keywords": [
+    "clipboard",
+    "copy",
+    "copy-to-clipboard",
+    "browser",
+    "clipboard-api"
+  ],
   "author": "silverwind",
   "repository": "silverwind/clippie",
   "license": "BSD-2-Clause",
