@@ -12,15 +12,12 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 }
 
 type MockClipboardOpts = {
-  writeText?: (text: string) => Promise<void>;
   write?: false | ((entries: ClipboardItem[]) => Promise<void>);
 };
 
-function mockClipboard({writeText, write}: MockClipboardOpts = {}) {
+function mockClipboard({write}: MockClipboardOpts = {}) {
   const items: any[] = [];
-  const clipboard: {writeText: NonNullable<MockClipboardOpts["writeText"]>, write?: Exclude<MockClipboardOpts["write"], false>} = {
-    writeText: writeText ?? ((text: string) => { items.push(text); return Promise.resolve(); }),
-  };
+  const clipboard: {write?: Exclude<MockClipboardOpts["write"], false>} = {};
   if (write !== false) {
     clipboard.write = write ?? ((entries: ClipboardItem[]) => {
       for (const entry of entries) items.push(entry);
@@ -36,8 +33,7 @@ const originalExecCommand = document.execCommand; // eslint-disable-line @typesc
 function mockExecCommand(impl: (cmd: string) => boolean = () => true) {
   const calls: Array<{cmd: string, value: string}> = [];
   (document as any).execCommand = (cmd: string) => {
-    const textareas = document.querySelectorAll("textarea");
-    calls.push({cmd, value: textareas[textareas.length - 1].value});
+    calls.push({cmd, value: document.querySelector("textarea")!.value});
     return impl(cmd);
   };
   return calls;
