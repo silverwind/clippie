@@ -106,7 +106,7 @@ test("blob with empty type in array", async () => {
   expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
 });
 
-describe.sequential("fallback and error paths", () => {
+describe("fallback and error paths", {concurrent: false}, () => {
   afterEach(() => {
     (document as any).execCommand = originalExecCommand;
   });
