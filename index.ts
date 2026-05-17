@@ -1,5 +1,8 @@
+/** A single copyable item */
+export type ClippieCopyable = string | Blob;
+
 /** The content to copy */
-export type ClippieContent = string | Blob | Array<string | Blob>;
+export type ClippieContent = ClippieCopyable | Array<ClippieCopyable>;
 
 /** A boolean indicating whether the copying was successful */
 export type ClippieResult = boolean;
