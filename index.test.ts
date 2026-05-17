@@ -106,7 +106,7 @@ test("blob with empty type in array", async () => {
   expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
 });
 
-describe("fallback and error paths", {concurrent: false}, () => {
+describe("fallback and error paths", () => {
   afterEach(() => {
     (document as any).execCommand = originalExecCommand;
   });
@@ -139,10 +139,15 @@ describe("fallback and error paths", {concurrent: false}, () => {
     expect(await clippie(["foo", "bar"])).toEqual(false);
   });
 
-  test("blob returns false when navigator.clipboard.write is missing", async () => {
+  test("single blob returns false when navigator.clipboard.write is missing", async () => {
     mockClipboard({write: false});
     mockExecCommand();
     expect(await clippie(new Blob(["x"], {type: "text/plain"}))).toEqual(false);
+  });
+
+  test("array with blob returns false when navigator.clipboard.write is missing", async () => {
+    mockClipboard({write: false});
+    mockExecCommand();
     expect(await clippie(["foo", new Blob(["x"])])).toEqual(false);
   });
 
