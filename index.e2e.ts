@@ -50,6 +50,13 @@ test("execCommand fallback", async ({page}) => {
   `)).toBe(true);
 });
 
+test("execCommand fallback with CRLF input", async ({page}) => {
+  expect(await run(page, `
+    Object.defineProperty(navigator, "clipboard", {value: undefined, configurable: true});
+    return clippie("a\\r\\nb");
+  `)).toBe(true);
+});
+
 test("reject:true rethrows", async ({page}) => {
   expect(await run(page, `
     Object.defineProperty(navigator, "clipboard", {value: {write: () => Promise.reject(new Error("nope"))}, configurable: true});

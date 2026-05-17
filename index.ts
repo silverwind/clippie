@@ -39,7 +39,7 @@ function fallback(content: string): boolean {
   document.body.append(el);
   try {
     el.select();
-    el.setSelectionRange(0, content.length);
+    el.setSelectionRange(0, el.value.length);
     return document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
   } finally {
     el.remove();
