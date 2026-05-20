@@ -26,25 +26,25 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
       ))]);
       return true;
     }
-    return items.every(c => typeof c === "string" && fallback(c));
+    return items.every(c => {
+      if (typeof c !== "string") return false;
+      const d = document;
+      const el = d.createElement("textarea");
+      el.value = c;
+      el.readOnly = true;
+      el.style.cssText = "clip-path:inset(50%);font-size:12pt;white-space:pre";
+      el.ariaHidden = "true";
+      d.body.append(el);
+      try {
+        el.select();
+        el.setSelectionRange(0, c.length);
+        return d.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
+      } finally {
+        el.remove();
+      }
+    });
   } catch (err) {
     if (reject) throw err;
     return false;
-  }
-}
-
-function fallback(content: string): boolean {
-  const el = document.createElement("textarea");
-  el.value = content;
-  el.readOnly = true;
-  el.style.cssText = "clip-path:inset(50%);font-size:12pt;white-space:pre";
-  el.ariaHidden = "true";
-  document.body.append(el);
-  try {
-    el.select();
-    el.setSelectionRange(0, el.value.length);
-    return document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
-  } finally {
-    el.remove();
   }
 }
