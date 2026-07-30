@@ -28,7 +28,7 @@ function mockClipboard({write}: MockClipboardOpts = {}) {
   return items;
 }
 
-const originalExecCommand = document.execCommand; // eslint-disable-line @typescript-eslint/no-deprecated
+const originalExecCommand = document.execCommand;
 
 function mockExecCommand(impl: (cmd: string) => boolean = () => true) {
   const calls: Array<{cmd: string, value: string}> = [];

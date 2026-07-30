@@ -18,7 +18,7 @@ document.getElementById("b").onclick = async () => console.log(JSON.stringify(aw
   await page.goto("http://localhost/");
   const [msg] = await Promise.all([
     page.waitForEvent("console"),
-    page.click("#b"),
+    page.locator("#b").click(),
   ]);
   return JSON.parse(msg.text());
 }
