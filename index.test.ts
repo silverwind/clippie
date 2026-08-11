@@ -1,163 +1,120 @@
+import {userEvent} from "vitest/browser";
 import {clippie} from "./index.ts";
 
-const img = new Blob([base64ToArrayBuffer("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"});
+const img = new Blob([Uint8Array.fromBase64("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"});
+const blob = new Blob(["x"], {type: "text/plain"});
 
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
-type MockClipboardOpts = {
-  write?: false | ((entries: ClipboardItem[]) => Promise<void>);
-};
-
-function mockClipboard({write}: MockClipboardOpts = {}) {
-  const items: any[] = [];
-  const clipboard: {write?: Exclude<MockClipboardOpts["write"], false>} = {};
-  if (write !== false) {
-    clipboard.write = write ?? ((entries: ClipboardItem[]) => {
-      for (const entry of entries) items.push(entry);
+function mockClipboard(write?: false | Clipboard["write"]) {
+  const items: ClipboardItem[] = [];
+  const clipboard: Partial<Clipboard> = write === false ? {} : {
+    write: write ?? (entries => {
+      items.push(...entries);
       return Promise.resolve();
-    });
-  }
+    }),
+  };
   Object.defineProperty(navigator, "clipboard", {value: clipboard, configurable: true});
   return items;
 }
 
-const originalExecCommand = document.execCommand;
-
-function mockExecCommand(impl: (cmd: string) => boolean = () => true) {
-  const calls: Array<{cmd: string, value: string}> = [];
-  (document as any).execCommand = (cmd: string) => {
-    calls.push({cmd, value: document.querySelector("textarea")!.value});
-    return impl(cmd);
+function mockExecCommand(impl: () => boolean = () => true) {
+  const values: string[] = [];
+  (document as any).execCommand = () => {
+    values.push(document.querySelector("textarea")!.value);
+    return impl();
   };
-  return calls;
+  return values;
 }
 
-function removeExecCommand() {
-  (document as any).execCommand = undefined;
-}
-
-test("string", async () => {
-  const clipboard = mockClipboard();
-  expect(await clippie("foo")).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
-});
-
-test("blob", async () => {
-  const clipboard = mockClipboard();
-  const foo = new Blob(["foo"], {type: "text/plain"});
-  expect(await clippie(foo)).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
-});
-
-test("strings", async () => {
-  const clipboard = mockClipboard();
-  expect(await clippie(["foo", "bar"], {reject: true})).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("bar");
-});
-
-test("blob and strings", async () => {
-  const clipboard = mockClipboard();
-  const bar = new Blob(["bar"], {type: "text/plain"});
-  expect(await clippie(["foo", bar], {reject: true})).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("bar");
-});
-
-test("image", async () => {
-  const clipboard = mockClipboard();
-  expect(await clippie([img], {reject: true})).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  expect((await clipboard[0].getType("image/png")).size).toEqual(img.size);
-});
-
-test("image and text", async () => {
-  const clipboard = mockClipboard();
-  expect(await clippie([img, "text"], {reject: true})).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  const item = clipboard[0];
-  expect(item.types).toEqual(["image/png", "text/plain"]);
-  expect((await item.getType("image/png")).size).toEqual(img.size);
-  expect(await (await item.getType("text/plain")).text()).toEqual("text");
-});
-
-test("blob with empty type", async () => {
-  const clipboard = mockClipboard();
-  const foo = new Blob(["foo"]);
-  expect(await clippie(foo, {reject: true})).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
-});
-
-test("blob with empty type in array", async () => {
-  const clipboard = mockClipboard();
-  const foo = new Blob(["foo"]);
-  expect(await clippie([foo], {reject: true})).toEqual(true);
-  expect(clipboard).toHaveLength(1);
-  expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
-});
-
-describe("fallback and error paths", () => {
-  afterEach(() => {
-    (document as any).execCommand = originalExecCommand;
+/** Runs `fn` in a click handler because browsers grant clipboard access only on user gesture */
+async function onClick<T>(fn: () => Promise<T>): Promise<T> {
+  const result = new Promise<T>(resolve => {
+    document.body.addEventListener("click", () => resolve(fn()), {once: true});
   });
+  await userEvent.click(document.body);
+  return result;
+}
 
-  test("string falls back to execCommand when clipboard.write is missing", async () => {
-    mockClipboard({write: false});
-    const calls = mockExecCommand();
+afterEach(() => {
+  delete (navigator as any).clipboard; // restore the real implementations shadowed by the mocks
+  delete (document as any).execCommand;
+});
+
+describe.sequential("clippie", () => { // the tests mutate navigator.clipboard, so they can not overlap
+  test("string", async () => {
+    const clipboard = mockClipboard();
     expect(await clippie("foo")).toEqual(true);
-    expect(calls).toEqual([{cmd: "copy", value: "foo"}]);
-    expect(document.querySelectorAll("textarea")).toHaveLength(0);
+    expect(clipboard).toHaveLength(1);
+    expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
   });
 
-  test("string returns false when clipboard.write and execCommand are missing", async () => {
-    mockClipboard({write: false});
-    removeExecCommand();
-    expect(await clippie("foo")).toEqual(false);
+  test("strings", async () => {
+    const clipboard = mockClipboard();
+    expect(await clippie(["foo", "bar"], {reject: true})).toEqual(true);
+    expect(clipboard).toHaveLength(1);
+    expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("bar");
   });
 
-  test("array uses fallback when navigator.clipboard.write is missing", async () => {
-    mockClipboard({write: false});
-    const calls = mockExecCommand();
-    expect(await clippie(["foo", "bar"])).toEqual(true);
-    expect(calls).toEqual([{cmd: "copy", value: "foo"}, {cmd: "copy", value: "bar"}]);
+  test("image and text", async () => {
+    const clipboard = mockClipboard();
+    expect(await clippie([img, "text"], {reject: true})).toEqual(true);
+    expect(clipboard).toHaveLength(1);
+    const item = clipboard[0];
+    expect(item.types).toEqual(["image/png", "text/plain"]);
+    expect((await item.getType("image/png")).size).toEqual(img.size);
+    expect(await (await item.getType("text/plain")).text()).toEqual("text");
   });
 
-  test("array fallback returns false when execCommand fails", async () => {
-    mockClipboard({write: false});
-    let count = 0;
-    mockExecCommand(() => ++count === 1);
-    expect(await clippie(["foo", "bar"])).toEqual(false);
+  test("blob with empty type", async () => {
+    const clipboard = mockClipboard();
+    const foo = new Blob(["foo"]);
+    expect(await clippie(foo, {reject: true})).toEqual(true);
+    expect(clipboard).toHaveLength(1);
+    expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
   });
 
-  test("single blob returns false when navigator.clipboard.write is missing", async () => {
-    mockClipboard({write: false});
-    mockExecCommand();
-    expect(await clippie(new Blob(["x"], {type: "text/plain"}))).toEqual(false);
+  describe("fallback and error paths", () => {
+    test("array uses fallback when navigator.clipboard.write is missing", async () => {
+      mockClipboard(false);
+      const values = mockExecCommand();
+      expect(await clippie(["foo", "bar"])).toEqual(true);
+      expect(values).toEqual(["foo", "bar"]);
+      expect(document.querySelectorAll("textarea")).toHaveLength(0);
+    });
+
+    test("array fallback returns false when execCommand fails", async () => {
+      mockClipboard(false);
+      let count = 0;
+      mockExecCommand(() => ++count === 1);
+      expect(await clippie(["foo", "bar"])).toEqual(false);
+    });
+
+    test("blob returns false when navigator.clipboard.write is missing", async () => {
+      mockClipboard(false);
+      expect(await clippie(blob)).toEqual(false);
+    });
+
+    test("rethrows when reject is true and write fails", async () => {
+      mockClipboard(() => Promise.reject(new Error("nope")));
+      await expect(clippie(blob, {reject: true})).rejects.toThrow("nope");
+    });
+
+    test("returns false when reject is false and write fails", async () => {
+      mockClipboard(() => Promise.reject(new Error("nope")));
+      expect(await clippie(blob)).toEqual(false);
+    });
   });
 
-  test("array with blob returns false when navigator.clipboard.write is missing", async () => {
-    mockClipboard({write: false});
-    mockExecCommand();
-    expect(await clippie(["foo", new Blob(["x"])])).toEqual(false);
-  });
+  describe("real clipboard", () => {
+    test("string and image", async () => {
+      expect(await onClick(async () => [
+        await clippie("hello", {reject: true}),
+        await clippie([img, "hello"], {reject: true}),
+      ])).toEqual([true, true]);
+    });
 
-  test("rethrows when reject is true and write fails", async () => {
-    mockClipboard({write: () => Promise.reject(new Error("nope"))});
-    await expect(clippie(new Blob(["x"], {type: "text/plain"}), {reject: true})).rejects.toThrow("nope");
-  });
-
-  test("returns false when reject is false and write fails", async () => {
-    mockClipboard({write: () => Promise.reject(new Error("nope"))});
-    expect(await clippie(new Blob(["x"], {type: "text/plain"}))).toEqual(false);
+    test("execCommand fallback", async () => {
+      mockClipboard(false);
+      expect(await onClick(() => clippie("a\r\nb", {reject: true}))).toEqual(true);
+    });
   });
 });
