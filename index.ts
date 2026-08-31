@@ -38,7 +38,7 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
       try {
         el.select();
         el.setSelectionRange(0, c.length);
-        return d.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
+        return d.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated -- required fallback when Clipboard API is unavailable
       } finally {
         el.remove();
       }
