@@ -10,7 +10,10 @@
     "clipboard-api"
   ],
   "author": "silverwind",
-  "repository": "silverwind/clippie",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silverwind/clippie.git"
+  },
   "license": "BSD-2-Clause",
   "type": "module",
   "sideEffects": false,
