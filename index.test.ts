@@ -39,7 +39,7 @@ afterEach(() => {
   delete (document as any).execCommand;
 });
 
-describe.sequential("clippie", () => { // the tests mutate navigator.clipboard, so they can not overlap
+describe("clippie", {concurrent: false}, () => { // the tests mutate navigator.clipboard, so they can not overlap
   test("string", async () => {
     const clipboard = mockClipboard();
     expect(await clippie("foo")).toEqual(true);
