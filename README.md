@@ -29,7 +29,7 @@ See [index.html](./index.html) for more examples.
 
 - `content` *string | Blob | Array\<string | Blob\>*: Content to copy. If an Array is passed, will construct a single [`ClipboardItem`](https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem) with one entry per unique type, later items overriding earlier ones of the same type.
 - `options` *object*
-  - `reject`: *boolean*: Whether to reject on unexpected errors. Default: `false`.
+  - `reject` *boolean*: Whether to reject on unexpected errors. Default: `false`.
 
 Returns `true` when all content was successfully copied, `false` when not. Will never throw unless `reject` is `true`.
 
