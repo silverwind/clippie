@@ -20,33 +20,25 @@
     }
   }
 
-  document.querySelector(".copytext").addEventListener("click", async () => {
-    await copy("sometext");
-  });
+  document.querySelector(".copytext").addEventListener("click", () => copy("sometext"));
 
-  document.querySelector(".copytextareafocus").addEventListener("click", async () => {
-    document.querySelector("textarea").focus();
-    document.querySelector("textarea").selectionStart = 0;
-    await new Promise(resolve => setTimeout(resolve, 200));
-    await copy("sometext");
-  });
+  for (const tag of ["textarea", "input"]) {
+    document.querySelector(`.copy${tag}focus`).addEventListener("click", async () => {
+      const field = document.querySelector(tag);
+      field.focus();
+      field.selectionStart = 0;
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await copy("sometext");
+    });
+  }
 
-  document.querySelector(".copyinputfocus").addEventListener("click", async () => {
-    document.querySelector("input").focus();
-    document.querySelector("input").selectionStart = 0;
-    await new Promise(resolve => setTimeout(resolve, 200));
-    await copy("sometext");
-  });
-
-  document.querySelector(".copysvg").addEventListener("click", async () => {
-    await copy([
-      new Blob([`<svg width="10" height="10"/>`], {type: "image/svg+xml"}),
-      `<svg width="20" height="20"/>`,
-    ]);
-  });
+  document.querySelector(".copysvg").addEventListener("click", () => copy([
+    new Blob([`<svg width="10" height="10"/>`], {type: "image/svg+xml"}),
+    `<svg width="20" height="20"/>`,
+  ]));
 
   document.querySelector(".copyimg").addEventListener("click", async () => {
     const blob = await (await fetch("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAADUlEQVQIHQECAP3/AAAAAgABzePRKwAAAABJRU5ErkJggg==")).blob();
-    await copy([blob, `image description`]);
+    await copy([blob, "image description"]);
   });
 </script></body></html>

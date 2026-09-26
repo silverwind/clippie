@@ -25,7 +25,6 @@ function mockExecCommand(impl: () => boolean = () => true) {
   return values;
 }
 
-/** Runs `fn` in a click handler because browsers grant clipboard access only on user gesture */
 async function onClick<T>(fn: () => Promise<T>): Promise<T> {
   const result = new Promise<T>(resolve => {
     document.body.addEventListener("click", () => resolve(fn()), {once: true});
@@ -35,11 +34,11 @@ async function onClick<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 afterEach(() => {
-  delete (navigator as any).clipboard; // restore the real implementations shadowed by the mocks
+  delete (navigator as any).clipboard;
   delete (document as any).execCommand;
 });
 
-describe("clippie", {concurrent: false}, () => { // the tests mutate navigator.clipboard, so they can not overlap
+describe("clippie", {concurrent: false}, () => {
   test("string", async () => {
     const clipboard = mockClipboard();
     expect(await clippie("foo")).toEqual(true);
@@ -66,8 +65,7 @@ describe("clippie", {concurrent: false}, () => { // the tests mutate navigator.c
 
   test("blob with empty type", async () => {
     const clipboard = mockClipboard();
-    const foo = new Blob(["foo"]);
-    expect(await clippie(foo, {reject: true})).toEqual(true);
+    expect(await clippie(new Blob(["foo"]), {reject: true})).toEqual(true);
     expect(clipboard).toHaveLength(1);
     expect(await (await clipboard[0].getType("text/plain")).text()).toEqual("foo");
   });
