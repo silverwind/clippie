@@ -5,20 +5,24 @@
 
 ## Usage
 
+```sh
+pnpm add clippie
+```
+
 ```js
 import {clippie} from "clippie";
 
 // copy text
-const success = await clippie("text to copy");
+await clippie("text to copy");
 
 // copy image
-const success = await clippie(imageBlob);
+await clippie(imageBlob);
 
 // copy image and text at once
-const success = await clippie([imageBlob, "image description"]);
+await clippie([imageBlob, "image description"]);
 ```
 
-See [index.html](./index.html) for more example.
+See [index.html](./index.html) for more examples.
 
 ## API
 ### clippie(content, [options])
