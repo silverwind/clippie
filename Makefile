@@ -18,31 +18,35 @@ lint-fix: node_modules
 	pnpm exec eslint-silverwind --color . --fix
 	pnpm exec tsgo
 
+.PHONY: test
+test: node_modules browsers
+	pnpm exec vitest
+
+.PHONY: test-update
+test-update: node_modules browsers
+	pnpm exec vitest -u
+
 .PHONY: browsers
 browsers: node_modules
 	pnpm exec playwright install --only-shell chromium firefox webkit
 
-.PHONY: test
-test: browsers
-	pnpm exec vitest
-
 .PHONY: test-coverage
-test-coverage: browsers
+test-coverage: node_modules browsers
 	pnpm exec vitest --project=chromium --coverage
-
-.PHONY: test-update
-test-update: browsers
-	pnpm exec vitest -u
-
-.PHONY: watch
-watch: node_modules $(SOURCE_FILES) pnpm-lock.yaml package.json tsdown.config.ts
-	pnpm exec tsdown --watch
 
 .PHONY: build
 build: node_modules $(DIST_FILES)
 
 $(DIST_FILES): $(SOURCE_FILES) pnpm-lock.yaml package.json tsdown.config.ts
 	pnpm exec tsdown
+
+.PHONY: watch
+watch: node_modules
+	pnpm exec tsdown --watch
+
+.PHONY: publish
+publish: node_modules build
+	pnpm publish --no-git-checks
 
 .PHONY: update
 update: update-js update-actions
@@ -54,14 +58,10 @@ update-js: node_modules
 	pnpm install
 	@touch node_modules
 
-.PHONY: publish
-publish: build
-	pnpm publish --no-git-checks
+.PHONY: update-actions
+update-actions: node_modules
+	pnpm exec updates -u -M actions
 
 .PHONY: patch minor major
 patch minor major: node_modules lint test
 	pnpm exec versions -R $@ package.json
-
-.PHONY: update-actions
-update-actions: node_modules
-	pnpm exec updates -u -M actions
