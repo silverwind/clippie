@@ -18,6 +18,10 @@ lint-fix: node_modules
 	pnpm exec eslint-silverwind --color . --fix
 	pnpm exec tsgo
 
+.PHONY: browsers
+browsers: node_modules
+	pnpm exec playwright install --only-shell chromium firefox webkit
+
 .PHONY: test
 test: node_modules browsers
 	pnpm exec vitest
@@ -26,10 +30,6 @@ test: node_modules browsers
 test-update: node_modules browsers
 	pnpm exec vitest -u
 
-.PHONY: browsers
-browsers: node_modules
-	pnpm exec playwright install --only-shell chromium firefox webkit
-
 .PHONY: test-coverage
 test-coverage: node_modules browsers
 	pnpm exec vitest --project=chromium --coverage
@@ -37,7 +37,7 @@ test-coverage: node_modules browsers
 .PHONY: build
 build: node_modules $(DIST_FILES)
 
-$(DIST_FILES): $(SOURCE_FILES) pnpm-lock.yaml package.json tsdown.config.ts
+$(DIST_FILES): $(SOURCE_FILES) pnpm-lock.yaml package.json tsconfig.json tsdown.config.ts
 	pnpm exec tsdown
 
 .PHONY: watch
