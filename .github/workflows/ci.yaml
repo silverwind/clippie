@@ -22,7 +22,7 @@ jobs:
         with:
           cache: pnpm
           node-version: ${{matrix.node}}
-      - run: make lint
+      - run: make deps lint
 
   test:
     runs-on: macos-latest
