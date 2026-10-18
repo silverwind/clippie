@@ -16,11 +16,11 @@ function mockClipboard(write?: false | Clipboard["write"]) {
   return items;
 }
 
-async function onClick<T>(fn: () => Promise<T>): Promise<T> {
+async function onEvent<T>(fn: () => Promise<T>, type = "click", trigger = () => userEvent.click(document.body)): Promise<T> {
   const result = new Promise<T>(resolve => {
-    document.body.addEventListener("click", () => resolve(fn()), {once: true});
+    document.addEventListener(type, () => resolve(fn()), {once: true});
   });
-  await userEvent.click(document.body);
+  await trigger();
   return result;
 }
 
@@ -74,7 +74,7 @@ describe("clippie", {concurrent: false}, () => {
 
   describe("real clipboard", () => {
     test("string and image", async () => {
-      expect(await onClick(async () => [
+      expect(await onEvent(async () => [
         await clippie("hello", {reject: true}),
         await clippie([img, "hello"], {reject: true}),
       ])).toEqual([true, true]);
@@ -82,7 +82,33 @@ describe("clippie", {concurrent: false}, () => {
 
     test("execCommand fallback", async () => {
       mockClipboard(false);
-      expect(await onClick(() => clippie("a\r\nb", {reject: true}))).toEqual(true);
+      expect(await onEvent(() => clippie("a\r\nb", {reject: true}))).toEqual(true);
+    });
+
+    test("execCommand fallback copies inside the topmost modal dialog or fullscreen element", async () => {
+      mockClipboard(false);
+      const copy = async () => {
+        let target = "";
+        document.addEventListener("copy", e => { target = (e.target as Element).tagName; }, {once: true});
+        await clippie("x", {reject: true});
+        return target;
+      };
+      document.body.innerHTML = "<dialog><button></button></dialog>".repeat(3);
+      const [a, b, c] = document.querySelectorAll("dialog");
+      a.showModal();
+      c.showModal();
+      b.showModal();
+      expect(await onEvent(copy, "click", () => userEvent.click(b.querySelector("button")!))).toEqual("TEXTAREA");
+      b.close();
+      c.close();
+      (document.activeElement as HTMLElement).blur();
+      expect(await onEvent(copy, "keydown", () => userEvent.keyboard("a"))).toEqual("TEXTAREA");
+      document.body.innerHTML = "<div><button></button></div>";
+      const fullscreen = document.querySelector("div")!;
+      const clickButton = () => userEvent.click(fullscreen.querySelector("button")!);
+      await onEvent(() => fullscreen.requestFullscreen(), "click", clickButton);
+      expect(await onEvent(copy, "click", clickButton)).toEqual("TEXTAREA");
+      await document.exitFullscreen();
     });
   });
 });
