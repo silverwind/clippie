@@ -34,7 +34,7 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
       el.readOnly = true;
       el.style.cssText = "clip-path:inset(50%);font-size:12pt;white-space:pre";
       el.ariaHidden = "true";
-      (d.activeElement?.closest(":modal") ?? d.querySelector(":modal") ?? d.body).append(el); // content outside of a modal dialog or fullscreen element is inert
+      (d.activeElement?.closest(":modal") ?? d.querySelector(":modal") ?? d.body).append(el); // content outside of the topmost modal dialog or fullscreen element is inert, which is not exposed: https://github.com/whatwg/html/issues/9075
       try {
         el.select();
         el.setSelectionRange(0, c.length);
