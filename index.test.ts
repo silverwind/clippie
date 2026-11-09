@@ -62,22 +62,30 @@ describe("clippie", {concurrent: false}, () => {
 
   describe("fallback and error paths", () => {
     test.for([
-      ["uses fallback when navigator.clipboard is missing", () => setClipboard(), true],
-      ["uses fallback when navigator.clipboard.writeText is missing", () => setClipboard({}), true],
-      ["uses fallback when navigator.clipboard.writeText rejects", () => setClipboard({writeText: nope}), true],
-      ["fallback returns false when execCommand fires no copy event", () => setClipboard(), false],
-    ] as const)("array %s", async ([_name, setup, fires]) => {
+      ["uses fallback when navigator.clipboard is missing", () => setClipboard(), "event"],
+      ["uses fallback when navigator.clipboard.writeText is missing", () => setClipboard({}), "event"],
+      ["uses fallback when navigator.clipboard.writeText rejects", () => setClipboard({writeText: nope}), "event"],
+      ["fallback selects a textarea when execCommand fires no copy event", () => setClipboard(), "textarea"],
+      ["fallback returns false when execCommand copies nothing", () => setClipboard(), "none"],
+    ] as const)("array %s", async ([_name, setup, mode]) => {
       setup();
       let data = "";
       (document as any).execCommand = () => {
-        if (!fires) return;
-        const event = new ClipboardEvent("copy", {clipboardData: new DataTransfer()});
-        document.dispatchEvent(event);
-        data = event.clipboardData!.getData("text/plain");
+        const textarea = document.querySelector("textarea");
+        if (mode === "textarea" && textarea) {
+          data = textarea.value;
+          return true;
+        }
+        if (mode === "event") {
+          const event = new ClipboardEvent("copy", {clipboardData: new DataTransfer()});
+          document.dispatchEvent(event);
+          data = event.clipboardData!.getData("text/plain");
+        }
+        return false;
       };
-      expect(await clippie(["foo", "bar"], {reject: true})).toEqual(fires);
-      expect(data).toEqual(fires ? "bar" : "");
-      expect(document.dispatchEvent(new ClipboardEvent("copy", {cancelable: true}))).toEqual(true);
+      expect(await clippie(["foo", "bar"], {reject: true})).toEqual(mode !== "none");
+      expect(data).toEqual(mode === "none" ? "" : "bar");
+      expect([document.querySelector("textarea"), document.dispatchEvent(new ClipboardEvent("copy", {cancelable: true}))]).toEqual([null, true]);
     });
 
     test("blob returns false when ClipboardItem is missing", async () => {
@@ -112,6 +120,17 @@ describe("clippie", {concurrent: false}, () => {
       input.addEventListener("keydown", e => e.preventDefault());
       expect(await onEvent(() => clippie("a\r\nb", {reject: true}), "keydown", () => userEvent.keyboard("a"))).toEqual(true);
       expect([document.activeElement, input.selectionStart, input.selectionEnd, pageHandlerCalled]).toEqual([input, 0, 5, false]);
+    });
+
+    test("execCommand fallback copies and restores focus with focus on a password field in a modal dialog", async () => {
+      setClipboard();
+      document.body.innerHTML = `<dialog><input type="password"></dialog>`;
+      document.querySelector("dialog")!.showModal();
+      const input = document.querySelector("input")!;
+      input.focus();
+      input.addEventListener("keydown", e => e.preventDefault());
+      expect(await onEvent(() => clippie("x", {reject: true}), "keydown", () => userEvent.keyboard("a"))).toEqual(true);
+      expect(document.activeElement).toEqual(input);
     });
   });
 });

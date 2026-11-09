@@ -41,6 +41,8 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
 }
 
 function fallback(text: string): boolean {
+  const d = document;
+  const copy = () => d.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated -- required fallback when Clipboard API is unavailable
   let copied = false;
   const onCopy = (e: ClipboardEvent) => {
     e.stopImmediatePropagation();
@@ -48,11 +50,28 @@ function fallback(text: string): boolean {
     e.clipboardData!.setData("text/plain", text);
     copied = true;
   };
-  document.addEventListener("copy", onCopy, {capture: true});
+  d.addEventListener("copy", onCopy, {capture: true});
   try {
-    document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated -- required fallback when Clipboard API is unavailable
+    copy();
+    if (copied) return true;
+    // no copy event fires with focus in a password field or with dom.event.clipboardevents.enabled off, so select a textarea
+    const active = d.activeElement as HTMLElement | null;
+    const el = d.createElement("textarea");
+    el.value = text;
+    el.readOnly = true;
+    el.style.cssText = "position:fixed;top:0;clip-path:inset(50%);font-size:12pt;white-space:pre";
+    el.ariaHidden = "true";
+    // content outside of the topmost modal dialog or fullscreen element is inert, which is not exposed: https://github.com/whatwg/html/issues/9075
+    (active?.closest(":modal") ?? d.querySelector(":modal") ?? d.body).append(el);
+    try {
+      el.select();
+      el.setSelectionRange(0, text.length);
+      return copy() || copied;
+    } finally {
+      el.remove();
+      active?.focus({preventScroll: true});
+    }
   } finally {
-    document.removeEventListener("copy", onCopy, {capture: true});
+    d.removeEventListener("copy", onCopy, {capture: true});
   }
-  return copied;
 }
