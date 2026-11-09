@@ -3,6 +3,7 @@ import {clippie, type ClippieContent, type ClippieOpts} from "./index.ts";
 
 const img = new Blob([Uint8Array.fromBase64("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"});
 const blob = new Blob(["x"], {type: "text/plain"});
+const {clipboard} = navigator;
 
 const setClipboard = (value?: Partial<Clipboard>) => Object.defineProperty(navigator, "clipboard", {value, configurable: true});
 const nope = () => Promise.reject(new Error("nope"));
@@ -30,6 +31,8 @@ async function onEvent<T>(fn: () => Promise<T>, type = "click", trigger = () => 
   await trigger();
   return result;
 }
+
+const copyAndRead = async (text: string) => await clippie(text, {reject: true}) && clipboard.readText();
 
 afterEach(() => {
   delete (navigator as any).clipboard;
@@ -102,10 +105,11 @@ describe("clippie", {concurrent: false}, () => {
 
   describe("real clipboard", () => {
     test("string and image", async () => {
-      expect(await onEvent(async () => [
-        await clippie("hello", {reject: true}),
-        await clippie([img, "hello"], {reject: true}),
-      ])).toEqual([true, true]);
+      expect(await onEvent(async () => [await copyAndRead("hello"), await clippie([img, "world"], {reject: true})])).toEqual(["hello", true]);
+      expect(await onEvent(async () => {
+        const [item] = await clipboard.read();
+        return [item.types.toSorted(), await (await item.getType("text/plain")).text()];
+      })).toEqual([["image/png", "text/plain"], "world"]);
     });
 
     test("execCommand fallback keeps focus and selection, skips page copy handlers and works in a modal dialog", async () => {
@@ -118,7 +122,7 @@ describe("clippie", {concurrent: false}, () => {
       let pageHandlerCalled = false;
       input.addEventListener("copy", () => { pageHandlerCalled = true; });
       input.addEventListener("keydown", e => e.preventDefault());
-      expect(await onEvent(() => clippie("a\r\nb", {reject: true}), "keydown", () => userEvent.keyboard("a"))).toEqual(true);
+      expect(await onEvent(() => copyAndRead("a\r\nb"), "keydown", () => userEvent.keyboard("a"))).toEqual("a\r\nb");
       expect([document.activeElement, input.selectionStart, input.selectionEnd, pageHandlerCalled]).toEqual([input, 0, 5, false]);
     });
 
@@ -129,7 +133,7 @@ describe("clippie", {concurrent: false}, () => {
       const input = document.querySelector("input")!;
       input.focus();
       input.addEventListener("keydown", e => e.preventDefault());
-      expect(await onEvent(() => clippie("x", {reject: true}), "keydown", () => userEvent.keyboard("a"))).toEqual(true);
+      expect(await onEvent(() => copyAndRead("x"), "keydown", () => userEvent.keyboard("a"))).toEqual("x");
       expect(document.activeElement).toEqual(input);
     });
   });

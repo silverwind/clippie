@@ -8,9 +8,9 @@ export default defineConfig(browser({
     browser: {
       provider: playwright(),
       instances: [
-        {browser: "chromium", provider: playwright({contextOptions: {permissions: ["clipboard-write"]}})},
-        {browser: "firefox"},
-        {browser: "webkit"},
+        {browser: "chromium", provider: playwright({contextOptions: {permissions: ["clipboard-read", "clipboard-write"]}})},
+        {browser: "firefox", provider: playwright({launchOptions: {firefoxUserPrefs: {"dom.events.testing.asyncClipboard": true}}})},
+        {browser: "webkit", provider: playwright({contextOptions: {permissions: ["clipboard-read"]}})},
       ],
     },
   },
