@@ -17,14 +17,18 @@ export type ClippieOpts = {
 export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
     const items = [content].flat();
-    if (navigator?.clipboard?.write) {
-      await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
-        items.map(c => {
-          const type = (c as Blob).type || "text/plain";
-          return [type, new Blob([c], {type})];
-        }),
-      ))]);
-      return true;
+    if (globalThis.ClipboardItem) {
+      try {
+        await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
+          items.map(c => {
+            const type = (c as Blob).type || "text/plain";
+            return [type, new Blob([c], {type})];
+          }),
+        ))]);
+        return true;
+      } catch (err) {
+        if (items.some(c => typeof c !== "string")) throw err;
+      }
     }
     return items.every(c => {
       if (typeof c !== "string") return false;

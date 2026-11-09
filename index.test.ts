@@ -4,9 +4,9 @@ import {clippie, type ClippieContent, type ClippieOpts} from "./index.ts";
 const img = new Blob([Uint8Array.fromBase64("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"});
 const blob = new Blob(["x"], {type: "text/plain"});
 
-function mockClipboard(write?: false | Clipboard["write"]) {
+function mockClipboard(write?: Clipboard["write"]) {
   const items: ClipboardItem[] = [];
-  const clipboard: Partial<Clipboard> = write === false ? {} : {
+  const clipboard: Partial<Clipboard> = {
     write: write ?? (entries => {
       items.push(...entries);
       return Promise.resolve();
@@ -15,6 +15,9 @@ function mockClipboard(write?: false | Clipboard["write"]) {
   Object.defineProperty(navigator, "clipboard", {value: clipboard, configurable: true});
   return items;
 }
+
+const removeClipboardItem = () => vi.stubGlobal("ClipboardItem", undefined);
+const rejectWrite = () => mockClipboard(() => Promise.reject(new Error("nope")));
 
 async function onEvent<T>(fn: () => Promise<T>, type = "click", trigger = () => userEvent.click(document.body)): Promise<T> {
   const result = new Promise<T>(resolve => {
@@ -27,6 +30,7 @@ async function onEvent<T>(fn: () => Promise<T>, type = "click", trigger = () => 
 afterEach(() => {
   delete (navigator as any).clipboard;
   delete (document as any).execCommand;
+  vi.unstubAllGlobals();
 });
 
 describe("clippie", {concurrent: false}, () => {
@@ -46,27 +50,28 @@ describe("clippie", {concurrent: false}, () => {
 
   describe("fallback and error paths", () => {
     test.for([
-      ["uses fallback when navigator.clipboard.write is missing", [true, true], true],
-      ["fallback returns false when execCommand fails", [true, false], false],
-    ] as const)("array %s", async ([_name, results, expected]) => {
-      mockClipboard(false);
+      ["uses fallback when ClipboardItem is missing", removeClipboardItem, [true, true], true],
+      ["uses fallback when navigator.clipboard.write rejects", rejectWrite, [true, true], true],
+      ["fallback returns false when execCommand fails", removeClipboardItem, [true, false], false],
+    ] as const)("array %s", async ([_name, setup, results, expected]) => {
+      setup();
       const values: string[] = [];
       (document as any).execCommand = () => {
         values.push(document.querySelector("textarea")!.value);
         return results[values.length - 1];
       };
-      expect(await clippie(["foo", "bar"])).toEqual(expected);
+      expect(await clippie(["foo", "bar"], {reject: true})).toEqual(expected);
       expect(values).toEqual(["foo", "bar"]);
       expect(document.querySelectorAll("textarea")).toHaveLength(0);
     });
 
-    test("blob returns false when navigator.clipboard.write is missing", async () => {
-      mockClipboard(false);
+    test("blob returns false when ClipboardItem is missing", async () => {
+      removeClipboardItem();
       expect(await clippie(blob)).toEqual(false);
     });
 
-    test("write failure rethrows when reject is true and returns false when reject is false", async () => {
-      mockClipboard(() => Promise.reject(new Error("nope")));
+    test("blob write failure rethrows when reject is true and returns false when reject is false", async () => {
+      rejectWrite();
       await expect(clippie(blob, {reject: true})).rejects.toThrow("nope");
       expect(await clippie(blob)).toEqual(false);
     });
@@ -81,12 +86,12 @@ describe("clippie", {concurrent: false}, () => {
     });
 
     test("execCommand fallback", async () => {
-      mockClipboard(false);
+      removeClipboardItem();
       expect(await onEvent(() => clippie("a\r\nb", {reject: true}))).toEqual(true);
     });
 
     test("execCommand fallback copies inside the topmost modal dialog or fullscreen element", async () => {
-      mockClipboard(false);
+      removeClipboardItem();
       const copy = async () => {
         let target = "";
         document.addEventListener("copy", e => { target = (e.target as Element).tagName; }, {once: true});
