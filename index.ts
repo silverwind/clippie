@@ -21,12 +21,12 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
     const text = entries["text/plain"];
     const {clipboard} = navigator;
     if (typeof text === "string" && Object.keys(entries).length === 1) {
-      if (!clipboard?.writeText) return execCopy(text);
+      if (!clipboard?.writeText) return fallback(text);
       try {
         await clipboard.writeText(text);
         return true;
       } catch {
-        return execCopy(text);
+        return fallback(text);
       }
     }
     if (!window.ClipboardItem || !clipboard?.write) return false;
@@ -40,7 +40,7 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
   }
 }
 
-function execCopy(text: string): boolean {
+function fallback(text: string): boolean {
   let copied = false;
   const onCopy = (e: ClipboardEvent) => {
     e.stopImmediatePropagation();
