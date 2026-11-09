@@ -16,38 +16,43 @@ export type ClippieOpts = {
 /** Copies `content` to the clipboard, which can be text, images or an array of these */
 export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
-    const items = ([] as ClippieCopyable[]).concat(content);
-    const isText = items.length > 0 && items.every(c => typeof c === "string");
-    if (window.ClipboardItem && navigator.clipboard?.write) {
+    const entries: Record<string, ClippieCopyable> = {};
+    for (const c of ([] as ClippieCopyable[]).concat(content)) entries[(c as Blob).type || "text/plain"] = c;
+    const text = entries["text/plain"];
+    const {clipboard} = navigator;
+    if (typeof text === "string" && Object.keys(entries).length === 1) {
+      if (!clipboard?.writeText) return execCopy(text);
       try {
-        await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
-          items.map(c => {
-            const type = (c as Blob).type || "text/plain";
-            return [type, new Blob([c], {type})];
-          }),
-        ))]);
+        await clipboard.writeText(text);
         return true;
-      } catch (err) {
-        if (!isText) throw err;
+      } catch {
+        return execCopy(text);
       }
     }
-    if (!isText) return false;
-    let copied = false;
-    const onCopy = (e: ClipboardEvent) => {
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      e.clipboardData!.setData("text/plain", items[items.length - 1]);
-      copied = true;
-    };
-    document.addEventListener("copy", onCopy, {capture: true});
-    try {
-      document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated -- required fallback when Clipboard API is unavailable
-    } finally {
-      document.removeEventListener("copy", onCopy, {capture: true});
-    }
-    return copied;
+    if (!window.ClipboardItem || !clipboard?.write) return false;
+    await clipboard.write([new ClipboardItem(Object.fromEntries(
+      Object.entries(entries).map(([type, c]) => [type, new Blob([c], {type})]),
+    ))]);
+    return true;
   } catch (err) {
     if (reject) throw err;
     return false;
   }
+}
+
+function execCopy(text: string): boolean {
+  let copied = false;
+  const onCopy = (e: ClipboardEvent) => {
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    e.clipboardData!.setData("text/plain", text);
+    copied = true;
+  };
+  document.addEventListener("copy", onCopy, {capture: true});
+  try {
+    document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated -- required fallback when Clipboard API is unavailable
+  } finally {
+    document.removeEventListener("copy", onCopy, {capture: true});
+  }
+  return copied;
 }

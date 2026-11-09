@@ -4,21 +4,24 @@ import {clippie, type ClippieContent, type ClippieOpts} from "./index.ts";
 const img = new Blob([Uint8Array.fromBase64("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEElEQVR4AWP8z4APjEpjBQCgmgoBKVWovwAAAABJRU5ErkJggg==")], {type: "image/png"});
 const blob = new Blob(["x"], {type: "text/plain"});
 
-function mockClipboard(write?: Clipboard["write"]) {
+const setClipboard = (value?: Partial<Clipboard>) => Object.defineProperty(navigator, "clipboard", {value, configurable: true});
+const nope = () => Promise.reject(new Error("nope"));
+
+function mockClipboard() {
   const items: ClipboardItem[] = [];
-  const clipboard: Partial<Clipboard> = {
-    write: write ?? (entries => {
+  const texts: string[] = [];
+  setClipboard({
+    write: entries => {
       items.push(...entries);
       return Promise.resolve();
-    }),
-  };
-  Object.defineProperty(navigator, "clipboard", {value: clipboard, configurable: true});
-  return items;
+    },
+    writeText: text => {
+      texts.push(text);
+      return Promise.resolve();
+    },
+  });
+  return {items, texts};
 }
-
-const removeClipboardItem = () => vi.stubGlobal("ClipboardItem", undefined);
-const removeWrite = () => Object.defineProperty(navigator, "clipboard", {value: {}, configurable: true});
-const rejectWrite = () => mockClipboard(() => Promise.reject(new Error("nope")));
 
 async function onEvent<T>(fn: () => Promise<T>, type = "click", trigger = () => userEvent.click(document.body)): Promise<T> {
   const result = new Promise<T>(resolve => {
@@ -35,26 +38,34 @@ afterEach(() => {
 });
 
 describe("clippie", {concurrent: false}, () => {
-  test.for<[string, ClippieContent, Record<string, BlobPart>, ClippieOpts?]>([
-    ["string", "foo", {"text/plain": "foo"}],
-    ["strings", ["foo", "bar"], {"text/plain": "bar"}, {reject: true}],
-    ["image and text", [img, "text"], {"image/png": img, "text/plain": "text"}, {reject: true}],
-    ["blob with empty type", new Blob(["foo"]), {"text/plain": "foo"}, {reject: true}],
-  ])("%s", async ([_name, content, expected, opts]) => {
-    const clipboard = mockClipboard();
+  test.for<[string, ClippieContent, string, ClippieOpts?]>([
+    ["string", "foo", "foo"],
+    ["strings", ["foo", "bar"], "bar", {reject: true}],
+    ["text overriding a blob", [blob, "text"], "text", {reject: true}],
+  ])("%s uses writeText", async ([_name, content, expected, opts]) => {
+    const {items, texts} = mockClipboard();
     expect(await clippie(content, opts)).toEqual(true);
-    expect(clipboard.map(item => item.types)).toEqual([Object.keys(expected)]);
+    expect([items.length, texts]).toEqual([0, [expected]]);
+  });
+
+  test.for<[string, ClippieContent, Record<string, BlobPart>]>([
+    ["image and text", [img, "text"], {"image/png": img, "text/plain": "text"}],
+    ["blob with empty type", new Blob(["foo"]), {"text/plain": "foo"}],
+  ])("%s uses write", async ([_name, content, expected]) => {
+    const {items, texts} = mockClipboard();
+    expect(await clippie(content, {reject: true})).toEqual(true);
+    expect([texts.length, items.map(item => item.types)]).toEqual([0, [Object.keys(expected)]]);
     for (const [type, part] of Object.entries(expected)) {
-      expect(await (await clipboard[0].getType(type)).bytes()).toEqual(await new Blob([part]).bytes());
+      expect(await (await items[0].getType(type)).bytes()).toEqual(await new Blob([part]).bytes());
     }
   });
 
   describe("fallback and error paths", () => {
     test.for([
-      ["uses fallback when ClipboardItem is missing", removeClipboardItem, true],
-      ["uses fallback when navigator.clipboard.write is missing", removeWrite, true],
-      ["uses fallback when navigator.clipboard.write rejects", rejectWrite, true],
-      ["fallback returns false when execCommand fires no copy event", removeClipboardItem, false],
+      ["uses fallback when navigator.clipboard is missing", () => setClipboard(), true],
+      ["uses fallback when navigator.clipboard.writeText is missing", () => setClipboard({}), true],
+      ["uses fallback when navigator.clipboard.writeText rejects", () => setClipboard({writeText: nope}), true],
+      ["fallback returns false when execCommand fires no copy event", () => setClipboard(), false],
     ] as const)("array %s", async ([_name, setup, fires]) => {
       setup();
       let data = "";
@@ -70,12 +81,12 @@ describe("clippie", {concurrent: false}, () => {
     });
 
     test("blob returns false when ClipboardItem is missing", async () => {
-      removeClipboardItem();
+      vi.stubGlobal("ClipboardItem", undefined);
       expect(await clippie(blob)).toEqual(false);
     });
 
     test("blob write failure rethrows when reject is true and returns false when reject is false", async () => {
-      rejectWrite();
+      setClipboard({write: nope});
       await expect(clippie(blob, {reject: true})).rejects.toThrow("nope");
       expect(await clippie(blob)).toEqual(false);
     });
@@ -90,7 +101,7 @@ describe("clippie", {concurrent: false}, () => {
     });
 
     test("execCommand fallback keeps focus and selection, skips page copy handlers and works in a modal dialog", async () => {
-      removeClipboardItem();
+      setClipboard();
       document.body.innerHTML = `<dialog><input value="hello world"></dialog>`;
       document.querySelector("dialog")!.showModal();
       const input = document.querySelector("input")!;
