@@ -16,8 +16,9 @@ export type ClippieOpts = {
 /** Copies `content` to the clipboard, which can be text, images or an array of these */
 export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {}): Promise<ClippieResult> {
   try {
-    const items = [content].flat();
-    if (globalThis.ClipboardItem) {
+    const items = ([] as ClippieCopyable[]).concat(content);
+    const isText = items.length > 0 && items.every(c => typeof c === "string");
+    if (window.ClipboardItem && navigator.clipboard?.write) {
       try {
         await navigator.clipboard.write([new ClipboardItem(Object.fromEntries(
           items.map(c => {
@@ -27,27 +28,24 @@ export async function clippie(content: ClippieContent, {reject}: ClippieOpts = {
         ))]);
         return true;
       } catch (err) {
-        if (items.some(c => typeof c !== "string")) throw err;
+        if (!isText) throw err;
       }
     }
-    return items.every(c => {
-      if (typeof c !== "string") return false;
-      const d = document;
-      const el = d.createElement("textarea");
-      el.value = c;
-      el.readOnly = true;
-      el.style.cssText = "clip-path:inset(50%);font-size:12pt;white-space:pre";
-      el.ariaHidden = "true";
-      // content outside of the topmost modal dialog or fullscreen element is inert, which is not exposed: https://github.com/whatwg/html/issues/9075
-      (d.activeElement?.closest(":modal") ?? d.querySelector(":modal") ?? d.body).append(el);
-      try {
-        el.select();
-        el.setSelectionRange(0, c.length);
-        return d.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated -- required fallback when Clipboard API is unavailable
-      } finally {
-        el.remove();
-      }
-    });
+    if (!isText) return false;
+    let copied = false;
+    const onCopy = (e: ClipboardEvent) => {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      e.clipboardData!.setData("text/plain", items[items.length - 1]);
+      copied = true;
+    };
+    document.addEventListener("copy", onCopy, {capture: true});
+    try {
+      document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated -- required fallback when Clipboard API is unavailable
+    } finally {
+      document.removeEventListener("copy", onCopy, {capture: true});
+    }
+    return copied;
   } catch (err) {
     if (reject) throw err;
     return false;

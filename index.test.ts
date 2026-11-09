@@ -17,6 +17,7 @@ function mockClipboard(write?: Clipboard["write"]) {
 }
 
 const removeClipboardItem = () => vi.stubGlobal("ClipboardItem", undefined);
+const removeWrite = () => Object.defineProperty(navigator, "clipboard", {value: {}, configurable: true});
 const rejectWrite = () => mockClipboard(() => Promise.reject(new Error("nope")));
 
 async function onEvent<T>(fn: () => Promise<T>, type = "click", trigger = () => userEvent.click(document.body)): Promise<T> {
@@ -50,19 +51,22 @@ describe("clippie", {concurrent: false}, () => {
 
   describe("fallback and error paths", () => {
     test.for([
-      ["uses fallback when ClipboardItem is missing", removeClipboardItem, [true, true], true],
-      ["uses fallback when navigator.clipboard.write rejects", rejectWrite, [true, true], true],
-      ["fallback returns false when execCommand fails", removeClipboardItem, [true, false], false],
-    ] as const)("array %s", async ([_name, setup, results, expected]) => {
+      ["uses fallback when ClipboardItem is missing", removeClipboardItem, true],
+      ["uses fallback when navigator.clipboard.write is missing", removeWrite, true],
+      ["uses fallback when navigator.clipboard.write rejects", rejectWrite, true],
+      ["fallback returns false when execCommand fires no copy event", removeClipboardItem, false],
+    ] as const)("array %s", async ([_name, setup, fires]) => {
       setup();
-      const values: string[] = [];
+      let data = "";
       (document as any).execCommand = () => {
-        values.push(document.querySelector("textarea")!.value);
-        return results[values.length - 1];
+        if (!fires) return;
+        const event = new ClipboardEvent("copy", {clipboardData: new DataTransfer()});
+        document.dispatchEvent(event);
+        data = event.clipboardData!.getData("text/plain");
       };
-      expect(await clippie(["foo", "bar"], {reject: true})).toEqual(expected);
-      expect(values).toEqual(["foo", "bar"]);
-      expect(document.querySelectorAll("textarea")).toHaveLength(0);
+      expect(await clippie(["foo", "bar"], {reject: true})).toEqual(fires);
+      expect(data).toEqual(fires ? "bar" : "");
+      expect(document.dispatchEvent(new ClipboardEvent("copy", {cancelable: true}))).toEqual(true);
     });
 
     test("blob returns false when ClipboardItem is missing", async () => {
@@ -85,35 +89,18 @@ describe("clippie", {concurrent: false}, () => {
       ])).toEqual([true, true]);
     });
 
-    test("execCommand fallback", async () => {
+    test("execCommand fallback keeps focus and selection, skips page copy handlers and works in a modal dialog", async () => {
       removeClipboardItem();
-      expect(await onEvent(() => clippie("a\r\nb", {reject: true}))).toEqual(true);
-    });
-
-    test("execCommand fallback copies inside the topmost modal dialog or fullscreen element", async () => {
-      removeClipboardItem();
-      const copy = async () => {
-        let target = "";
-        document.addEventListener("copy", e => { target = (e.target as Element).tagName; }, {once: true});
-        await clippie("x", {reject: true});
-        return target;
-      };
-      document.body.innerHTML = "<dialog><button></button></dialog>".repeat(3);
-      const [a, b, c] = document.querySelectorAll("dialog");
-      a.showModal();
-      c.showModal();
-      b.showModal();
-      expect(await onEvent(copy, "click", () => userEvent.click(b.querySelector("button")!))).toEqual("TEXTAREA");
-      b.close();
-      c.close();
-      (document.activeElement as HTMLElement).blur();
-      expect(await onEvent(copy, "keydown", () => userEvent.keyboard("a"))).toEqual("TEXTAREA");
-      document.body.innerHTML = "<div><button></button></div>";
-      const fullscreen = document.querySelector("div")!;
-      const clickButton = () => userEvent.click(fullscreen.querySelector("button")!);
-      await onEvent(() => fullscreen.requestFullscreen(), "click", clickButton);
-      expect(await onEvent(copy, "click", clickButton)).toEqual("TEXTAREA");
-      await document.exitFullscreen();
+      document.body.innerHTML = `<dialog><input value="hello world"></dialog>`;
+      document.querySelector("dialog")!.showModal();
+      const input = document.querySelector("input")!;
+      input.focus();
+      input.setSelectionRange(0, 5);
+      let pageHandlerCalled = false;
+      input.addEventListener("copy", () => { pageHandlerCalled = true; });
+      input.addEventListener("keydown", e => e.preventDefault());
+      expect(await onEvent(() => clippie("a\r\nb", {reject: true}), "keydown", () => userEvent.keyboard("a"))).toEqual(true);
+      expect([document.activeElement, input.selectionStart, input.selectionEnd, pageHandlerCalled]).toEqual([input, 0, 5, false]);
     });
   });
 });
